@@ -30,10 +30,10 @@ public class Crawler implements Runnable {
 
         while (true) {
             try {
-                int queueSize = Queue.getSize();
+                int queueSize = urlManager.getUrlFrontier().getUrlQueueSize();
 
                 while (queueSize-- != 0) {
-                    String seed = Queue.getUrl();
+                    String seed = urlManager.getUrlFrontier().getNextURL();
 
                     if (seed == null) break;
 
@@ -55,14 +55,14 @@ public class Crawler implements Runnable {
 
         if (doc != null) {
             // handled in UrlFrontier addUrl()
-            //visitedPageHandler.markPage(url);
+            urlManager.getUrlFrontier().markPage(url);
             for (Element link : doc.select("a[href]")) {
                 String new_link = link.absUrl("href");
-                if (!visitedPageHandler.isVisitedPage(new_link)) {
-                    Queue.addUrl(new_link);
+                if (! urlManager.getUrlFrontier().isVisitedPage(new_link)) {
+                    urlManager.getUrlFrontier().addURL(new_link,0);
                 }
             }
 
-        } else Queue.addUrl(url);
+        } else urlManager.getUrlFrontier().addURL(url,0);
     }
 }

@@ -6,7 +6,7 @@ import java.util.List;
 import org.apache.commons.validator.routines.UrlValidator;
 
 public class URLManager {
-    private URLFrontier urlFrontier;
+    private final URLFrontier urlFrontier;
 
     public URLManager() {
         urlFrontier = new URLFrontier(URLFrontier.loadQueueFromFile(), URLFrontier.loadVisitedPages());
@@ -121,6 +121,11 @@ public class URLManager {
     public static void Main(String[] args) {
 
     }
+
+    public URLFrontier getUrlFrontier(){
+        return urlFrontier;
+    }
+
 
     public void saveState() {
         URLFrontier.saveQueueToFile(urlFrontier.getQueue());

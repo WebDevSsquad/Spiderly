@@ -12,7 +12,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class URLFrontier {
     // URL Queue Handler's data members
     private static final String FUTURE_SEED_FILE = "src/main/resources/future_seed.txt";
-    private PriorityBlockingQueue<URLPriorityPair> urlQueue;
+    private final PriorityBlockingQueue<URLPriorityPair> urlQueue;
 
     // Visited Pages Handler's data members
     private static final String HASHED_PAGE_FILE = "src/main/resources/visited_pages.txt";
@@ -32,8 +32,9 @@ public class URLFrontier {
     }
 
     public boolean addURL(String url, int priority) {
-        markPage(url);
+        //markPage(url);
         URLPriorityPair newURL = new URLPriorityPair(url, priority);
+        urlQueue.offer(newURL);
         return true;
     }
 
@@ -48,12 +49,10 @@ public class URLFrontier {
     }
 
     public static void saveQueueToFile(PriorityBlockingQueue<URLPriorityPair> originalQueue) {
-        PriorityBlockingQueue<URLPriorityPair> queue = new PriorityBlockingQueue<>(originalQueue);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FUTURE_SEED_FILE))) {
-            // Iterate over the entries of the map and write each entry to the file
-            while (!queue.isEmpty()) {
-                String element = queue.poll();
-                writer.write(element);
+            // Iterate over the entries of the queue and write each entry to the file
+            for (URLPriorityPair pair : originalQueue) {
+                writer.write(pair.getUrl() + " " + pair.getPriority());
                 writer.newLine(); // Add a newline character to separate lines
             }
         } catch (IOException e) {
@@ -66,8 +65,16 @@ public class URLFrontier {
         try (BufferedReader reader = new BufferedReader(new FileReader(FUTURE_SEED_FILE))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                queue.offer(line);
-                System.out.println(line);
+                String[] parts = line.split(" ");
+                if (parts.length == 2) {
+                    String url = parts[0];
+                    int priority = Integer.parseInt(parts[1]);
+                    URLPriorityPair pair = new URLPriorityPair(url, priority);
+                    queue.offer(pair);
+                } else {
+                    // Handle invalid format or empty lines
+                    System.err.println("Invalid line: " + line);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -115,27 +122,29 @@ public class URLFrontier {
         return hashedPage;
     }
 
-    private class URLPriorityPair implements Comparable {
-        private String url;
-        private int priority;
-        private int depth;
+    public int getUrlQueueSize(){return urlQueue.size();}
+}
 
-        public String getUrl() {
-            return url;
-        }
+class URLPriorityPair implements Comparable {
+    private final String url;
+    private final int priority;
+    private int depth;
 
-        public int getPriority() {
-            return priority;
-        }
+    public String getUrl() {
+        return url;
+    }
 
-        public URLPriorityPair(String url, int priority) {
-            this.url = url;
-            this.priority = priority;
-        }
+    public int getPriority() {
+        return priority;
+    }
 
-        @Override
-        public int compareTo(Object other) {
-            return Integer.compare(this.priority, ((URLPriorityPair)other).priority);
-        }
+    public URLPriorityPair(String url, int priority) {
+        this.url = url;
+        this.priority = priority;
+    }
+
+    @Override
+    public int compareTo(Object other) {
+        return Integer.compare(this.priority, ((URLPriorityPair)other).priority);
     }
 }
