@@ -1,12 +1,8 @@
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 public class URLFrontier {
@@ -26,14 +22,14 @@ public class URLFrontier {
         return urlQueue.isEmpty();
     }
 
-    public String getNextURL() {
+    public URLPriorityPair getNextURL() {
         if (urlQueue.isEmpty()) return null;
-        return urlQueue.poll().getUrl();
+        return urlQueue.poll();
     }
 
-    public boolean addURL(String url, int priority) {
+    public boolean addURL(String url, int priority, int depth) {
         //markPage(url);
-        URLPriorityPair newURL = new URLPriorityPair(url, priority);
+        URLPriorityPair newURL = new URLPriorityPair(url, priority, depth);
         urlQueue.offer(newURL);
         return true;
     }
@@ -69,7 +65,7 @@ public class URLFrontier {
                 if (parts.length == 2) {
                     String url = parts[0];
                     int priority = Integer.parseInt(parts[1]);
-                    URLPriorityPair pair = new URLPriorityPair(url, priority);
+                    URLPriorityPair pair = new URLPriorityPair(url, priority, 0);
                     queue.offer(pair);
                 } else {
                     // Handle invalid format or empty lines
@@ -128,7 +124,7 @@ public class URLFrontier {
 class URLPriorityPair implements Comparable {
     private final String url;
     private final int priority;
-    private int depth;
+    private final int depth;
 
     public String getUrl() {
         return url;
@@ -138,9 +134,14 @@ class URLPriorityPair implements Comparable {
         return priority;
     }
 
-    public URLPriorityPair(String url, int priority) {
+    public int getDepth() {
+        return depth;
+    }
+
+    public URLPriorityPair(String url, int priority, int depth) {
         this.url = url;
         this.priority = priority;
+        this.depth = depth;
     }
 
     @Override

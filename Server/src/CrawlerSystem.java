@@ -6,7 +6,6 @@ public class CrawlerSystem {
 
 
         System.out.println(threadCount);
-
         URLManager urlManager = new URLManager();
 
         Thread[] threads = new Thread[threadCount];
@@ -17,6 +16,7 @@ public class CrawlerSystem {
         for (Thread thread : threads) {
             thread.start();
         }
+        long start = System.currentTimeMillis();
 
         // Wait for each thread to finish
         for (Thread thread : threads) {
@@ -26,6 +26,8 @@ public class CrawlerSystem {
                 e.printStackTrace();
             }
         }
+        long end = System.currentTimeMillis();
+        System.out.println((end - start) / 1000);
         urlManager.saveState();
         System.out.println("All threads have finished execution.");
     }
