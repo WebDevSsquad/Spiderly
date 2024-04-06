@@ -38,6 +38,7 @@ public class URLFrontier {
     private class URLPriorityPair implements Comparable {
         private String url;
         private int priority;
+        private int depth;
 
         public String getUrl() {
             return url;

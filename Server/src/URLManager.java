@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.commons.validator.routines.UrlValidator;
 
 public class URLManager {
-
     URLFrontier urlFrontier;
 
     public URLManager() {
@@ -115,5 +114,9 @@ public class URLManager {
         // Retrieve number of visits for the URL from analytics data
         // Dummy implementation, replace with actual data retrieval logic
         return 1000; // Example: 1000 visits
+    }
+
+    public static void main(String[] args) {
+
     }
 }
