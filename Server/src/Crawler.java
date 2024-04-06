@@ -4,16 +4,14 @@ import org.jsoup.nodes.Element;
 import java.io.IOException;
 
 public class Crawler implements Runnable {
-    private final UrlDiscovery Queue;
-    private final VisitedPageHandler visitedPageHandler;
+    private final URLManager urlManager;
 
     private final Parser parser;
 
     private final int THRESHOLD;
 
-    public Crawler(UrlDiscovery Queue, VisitedPageHandler visitedPageHandler, int maxDepth) {
-        this.Queue = Queue;
-        this.visitedPageHandler = visitedPageHandler;
+    public Crawler(URLManager urlManager, int maxDepth) {
+        this.urlManager = urlManager;
         parser = new Parser();
         THRESHOLD = maxDepth;
     }
@@ -56,7 +54,8 @@ public class Crawler implements Runnable {
         Document doc = parser.parse(url);
 
         if (doc != null) {
-            visitedPageHandler.markPage(url);
+            // handled in UrlFrontier addUrl()
+            //visitedPageHandler.markPage(url);
             for (Element link : doc.select("a[href]")) {
                 String new_link = link.absUrl("href");
                 if (!visitedPageHandler.isVisitedPage(new_link)) {

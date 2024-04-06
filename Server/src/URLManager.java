@@ -6,10 +6,10 @@ import java.util.List;
 import org.apache.commons.validator.routines.UrlValidator;
 
 public class URLManager {
-    URLFrontier urlFrontier;
+    private URLFrontier urlFrontier;
 
     public URLManager() {
-        urlFrontier = new URLFrontier();
+        urlFrontier = new URLFrontier(URLFrontier.loadQueueFromFile(), URLFrontier.loadVisitedPages());
     }
 
     public void addToFrontier(String url, int priority) {
@@ -29,9 +29,11 @@ public class URLManager {
             // Example tasks:
 
             // 1. URL Normalization
+            // In Parser
             urls = normalizeURLs(urls);
 
             // 2. URL Filtering
+            // In Parser
             urls = filterURLs(urls);
 
             // 3. URL Prioritization
@@ -116,7 +118,12 @@ public class URLManager {
         return 1000; // Example: 1000 visits
     }
 
-    public static void main(String[] args) {
+    public static void Main(String[] args) {
 
+    }
+
+    public void saveState() {
+        URLFrontier.saveQueueToFile(urlFrontier.getQueue());
+        URLFrontier.saveVisitedPages(urlFrontier.getHashedPage());
     }
 }
