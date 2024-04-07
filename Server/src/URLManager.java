@@ -3,18 +3,26 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
 import org.apache.commons.validator.UrlValidator;
 
 public class URLManager {
     private final URLFrontier urlFrontier;
 
     public URLManager() {
-        urlFrontier = new URLFrontier(URLFrontier.loadQueueFromFile(), URLFrontier.loadVisitedPages());
+        urlFrontier = new URLFrontier(URLFrontier.loadQueueFromFile(),
+                URLFrontier.loadVisitedPages(1),
+                URLFrontier.loadVisitedPages(2));
+    }
+
+    public static void Main(String[] args) {
+
     }
 
     public void addToFrontier(String url, int priority, int depth) {
         String shortenedURL = shortenURL(url);
-        urlFrontier.addURL(shortenedURL, priority, depth);
+        if (urlFrontier.addURL(shortenedURL, priority, depth))
+            urlFrontier.markURL(url);
     }
 
     public void manageFrontier() {
@@ -76,7 +84,7 @@ public class URLManager {
             URI normalizedURI = uri.normalize();
             String normalizedURL = normalizedURI.toString();
             // Return the normalized url
-            Logger.log(url + " --normalized--> " + normalizedURL);
+            if (!url.equals(normalizedURL)) Logger.log(url + " --normalized--> " + normalizedURL);
             return normalizedURL.toLowerCase();
         } catch (URISyntaxException e) {
             Logger.logError("Invalid URL: " + url, e);
@@ -103,17 +111,14 @@ public class URLManager {
         return 1000; // Example: 1000 visits
     }
 
-    public static void Main(String[] args) {
-
-    }
-
-    public URLFrontier getUrlFrontier(){
+    public URLFrontier getUrlFrontier() {
         return urlFrontier;
     }
 
 
     public void saveState() {
         URLFrontier.saveQueueToFile(urlFrontier.getQueue());
-        URLFrontier.saveVisitedPages(urlFrontier.getHashedPage());
+        URLFrontier.saveVisitedPages(urlFrontier.getHashedPage(), 1);
+        URLFrontier.saveVisitedPages(urlFrontier.getHashedURLs(), 2);
     }
 }

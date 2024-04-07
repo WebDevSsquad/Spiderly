@@ -10,12 +10,18 @@ public class URLFrontier {
     private static final String FUTURE_SEED_FILE = "src/main/resources/future_seed.txt";
     private final PriorityBlockingQueue<URLPriorityPair> urlQueue;
 
+    private static final String HASHED_URL_FILE = "src/main/resources/visited_urls.txt";
+    private final ConcurrentHashMap<String, Boolean> hashedURLs;
+
     // Visited Pages Handler's data members
     private static final String HASHED_PAGE_FILE = "src/main/resources/visited_pages.txt";
     private final ConcurrentHashMap<String, Boolean> hashedPage;
-    public URLFrontier(PriorityBlockingQueue<URLPriorityPair> urlQueue, ConcurrentHashMap<String, Boolean> hashedPage) {
+    public URLFrontier(PriorityBlockingQueue<URLPriorityPair> urlQueue,
+                       ConcurrentHashMap<String, Boolean> hashedPage,
+                       ConcurrentHashMap<String, Boolean> hashedURLs) {
         this.urlQueue = urlQueue;
         this.hashedPage = hashedPage;
+        this.hashedURLs = hashedURLs;
     }
 
     public boolean isEmpty() {
@@ -28,7 +34,6 @@ public class URLFrontier {
     }
 
     public boolean addURL(String url, int priority, int depth) {
-        //markPage(url);
         URLPriorityPair newURL = new URLPriorityPair(url, priority, depth);
         urlQueue.offer(newURL);
         return true;
@@ -78,20 +83,31 @@ public class URLFrontier {
         return queue;
     }
 
+    public void markURL(String url) {
+        String md5Hex = getHash(url);
+        hashedURLs.put(md5Hex, true);
+    }
+
+    public boolean isVisitedURL(String url) {
+        String md5Hex = getHash(url);
+        return hashedURLs.containsKey(md5Hex);
+    }
+
     public void markPage(String url) {
         String md5Hex = getHash(url);
         hashedPage.put(md5Hex, true);
     }
 
-    public boolean isVisitedPage(String url) {
-        String md5Hex = getHash(url);
+    public boolean isVisitedPage(String doc) {
+        String md5Hex = getHash(doc);
         return hashedPage.containsKey(md5Hex);
     }
 
-    public static void saveVisitedPages(ConcurrentHashMap<String, Boolean> hashedPage) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(HASHED_PAGE_FILE))) {
+    public static void saveVisitedPages(ConcurrentHashMap<String, Boolean> hashedMap, int fileSelector) {
+        String path = (fileSelector == 1 ? HASHED_PAGE_FILE : HASHED_URL_FILE);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
             // Iterate over the entries of the map and write each entry to the file
-            for (Map.Entry<String, Boolean> entry : hashedPage.entrySet()) {
+            for (Map.Entry<String, Boolean> entry : hashedMap.entrySet()) {
                 writer.write(entry.getKey());
                 writer.newLine(); // Add a newline character to separate lines
             }
@@ -100,18 +116,23 @@ public class URLFrontier {
         }
     }
 
-    public static ConcurrentHashMap<String, Boolean> loadVisitedPages() {
-        ConcurrentHashMap<String, Boolean> hashedPage = new ConcurrentHashMap<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(HASHED_PAGE_FILE))) {
+    public static ConcurrentHashMap<String, Boolean> loadVisitedPages(int fileSelector) {
+        ConcurrentHashMap<String, Boolean> hashMap = new ConcurrentHashMap<>();
+        String path = (fileSelector == 1 ? HASHED_PAGE_FILE : HASHED_URL_FILE);
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                hashedPage.put(line, true);
+                hashMap.put(line, true);
                 System.out.println(line);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return hashedPage;
+        return hashMap;
+    }
+
+    public ConcurrentHashMap<String, Boolean> getHashedURLs(){
+        return hashedURLs;
     }
 
     public ConcurrentHashMap<String, Boolean> getHashedPage(){

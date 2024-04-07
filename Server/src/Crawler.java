@@ -50,12 +50,18 @@ public class Crawler implements Runnable {
     }
 
     public void crawl(URLPriorityPair urlPriorityPair) throws IOException {
-        Document doc = parser.parse(urlPriorityPair.getUrl());
+        String url = urlPriorityPair.getUrl();
+        Document doc = parser.parse(url);
         URLFrontier urlFrontier = urlManager.getUrlFrontier();
 
         if (doc != null) {
-            // handled in UrlFrontier addUrl()
-            //urlManager.getUrlFrontier().markPage(url);
+            String docText = doc.text();
+            // Check if the url is a seed
+            if (!urlFrontier.isVisitedURL(url))
+                urlFrontier.markURL(url);
+            // Check if the page is duplicated
+            if (urlFrontier.isVisitedPage(docText)) return;
+            urlFrontier.markPage(docText);
             for (Element link : doc.select("a[href]")) {
                 String new_link = link.absUrl("href");
                 if (!urlManager.validURL(new_link)) {
@@ -63,7 +69,7 @@ public class Crawler implements Runnable {
                     continue;
                 };
                 String normalized_url = urlManager.normalizeURL(new_link);
-                if (! urlFrontier.isVisitedPage(normalized_url)) {
+                if (! urlFrontier.isVisitedURL(normalized_url)) {
                     urlManager.handleURL(normalized_url, urlPriorityPair.getDepth() + 1);
                 }
             }
