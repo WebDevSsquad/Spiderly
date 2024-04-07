@@ -1,10 +1,17 @@
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
+
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.EncoderException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.validator.UrlValidator;
+import org.apache.commons.codec.net.URLCodec;
 
 public class URLManager {
     private final URLFrontier urlFrontier;
@@ -84,11 +91,25 @@ public class URLManager {
             URI normalizedURI = uri.normalize();
             String normalizedURL = normalizedURI.toString();
             // Return the normalized url
-            if (!url.equals(normalizedURL)) Logger.log(url + " --normalized--> " + normalizedURL);
+            normalizedURL = apacheNormalization(normalizedURL);
+            //            if (!url.equals(normalizedURL)) Logger.log(url + " --normalized--> " + normalizedURL);
             return normalizedURL.toLowerCase();
         } catch (URISyntaxException e) {
-            Logger.logError("Invalid URL: " + url, e);
+            Logger.logError(STR."Invalid URL: \{url}", e);
             return null;
+        }
+    }
+
+    public  String apacheNormalization(String urlString) {
+        try {
+            // Decode percent-encoded characters
+            String decodedURL = URLDecoder.decode(urlString, StandardCharsets.UTF_8);
+
+            // Normalize decoded URL using Apache Commons Codec
+            URLCodec codec = new URLCodec();
+            return codec.decode(codec.encode(decodedURL));
+        } catch (DecoderException | EncoderException e) {
+            throw new RuntimeException(e);
         }
     }
 

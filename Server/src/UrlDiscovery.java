@@ -3,7 +3,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class UrlDiscovery {
-    private static final String FUTURE_SEED_FILE = "src/main/resources/future_seed.txt";
+    private static final String FUTURE_SEED_FILE = "src/main/resources/hashed_urls.txt";
     private ConcurrentLinkedQueue<String> queue;
 
     public UrlDiscovery(ConcurrentLinkedQueue<String> queue) {

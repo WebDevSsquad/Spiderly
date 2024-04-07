@@ -1,5 +1,5 @@
 public class CrawlerSystem {
-    private final int THRESHOLD = 40;
+    private final int THRESHOLD = 3;
 
     public void main(String[] args) {
         int threadCount = Integer.parseInt(args[0]);

@@ -10,6 +10,6 @@ public class Logger {
     }
 
     public static void logError(String errorMessage, Exception e) {
-        System.out.print("Error: " + e.toString() + ", " + errorMessage);
+        System.out.print(STR."Error: \{e.toString()}, \{errorMessage}");
     }
 }
