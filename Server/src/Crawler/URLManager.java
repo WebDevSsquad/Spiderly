@@ -1,19 +1,15 @@
-import java.io.IOException;
+package Crawler;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.EncoderException;
 
 import org.apache.commons.validator.UrlValidator;
 import org.apache.commons.codec.net.URLCodec;
-
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 
 public class URLManager {
     private final URLFrontier urlFrontier;
@@ -46,10 +42,10 @@ public class URLManager {
             // Example tasks:
 
             // 1. URL Normalization
-            // In Parser
+            // In Crawler.Parser
 
             // 2. URL Filtering
-            // In Parser
+            // In Crawler.Parser
             // 3. URL Prioritization
             // urls = prioritizeURLs(urls);
 
@@ -119,7 +115,7 @@ public class URLManager {
             // Return the normalized url
             normalizedURL = apacheNormalization(normalizedURL);
 
-//            if (!url.equals(normalizedURL)) Logger.log(url + " --normalized--> " + normalizedURL);
+//            if (!url.equals(normalizedURL)) Crawler.Logger.log(url + " --normalized--> " + normalizedURL);
 
             return normalizedURL.toLowerCase();
         } catch (URISyntaxException e) {

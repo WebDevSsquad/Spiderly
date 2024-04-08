@@ -1,3 +1,5 @@
+package Crawler;
+
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.*;

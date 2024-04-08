@@ -1,3 +1,5 @@
+package Crawler;
+
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -71,7 +73,7 @@ public class Crawler implements Runnable {
             for (Element link : doc.select("a[href]")) {
                 String new_link = link.absUrl("href");
                 if (!urlManager.validURL(new_link)) {
-//                    Logger.log(STR."Invalid Link: \{new_link}");
+//                    Crawler.Logger.log(STR."Invalid Link: \{new_link}");
                     continue;
                 };
                 String normalized_url = urlManager.normalizeURL(new_link);
