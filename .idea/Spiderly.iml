@@ -10,8 +10,6 @@
     <orderEntry type="library" name="jsoup-1.17.2" level="project" />
     <orderEntry type="library" name="lucene-analyzers-common-4.2.0" level="project" />
     <orderEntry type="library" name="java-json" level="project" />
-    <orderEntry type="library" name="jackson-databind-2.17.0" level="project" />
-    <orderEntry type="library" name="jackson-core-2.17.0" level="project" />
     <orderEntry type="library" name="json-simple-1.1.1" level="project" />
   </component>
 </module>
