@@ -1,3 +1,7 @@
+package src;
+
+import src.Indexer;
+
 import java.io.IOException;
 
 public class IndexerSystem {
