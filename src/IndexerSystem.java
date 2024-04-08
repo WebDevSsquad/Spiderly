@@ -2,7 +2,7 @@ package src;
 import java.io.IOException;
 
 public class IndexerSystem {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         DocumentManager documentManager = new DocumentManager();
         int threadCount = Integer.parseInt(args[0]);
         Thread[] threads = new Thread[threadCount];
