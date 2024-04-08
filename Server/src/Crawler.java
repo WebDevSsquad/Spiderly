@@ -39,7 +39,7 @@ public class Crawler implements Runnable {
 
                     crawl(seed);
 
-                    if(urlFrontier.getHashedPageSize() >= 6000) return;
+                  if(urlFrontier.getHashedPageSize() >= 6000) return;
 
                 }
 
@@ -80,6 +80,6 @@ public class Crawler implements Runnable {
                 }
             }
 
-        } else urlManager.handleURL(urlPriorityPair.getUrl(), urlPriorityPair.getDepth() + 1);
+        }
     }
 }

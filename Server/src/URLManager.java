@@ -1,17 +1,19 @@
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-
+import java.util.Collection;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.EncoderException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.apache.commons.validator.UrlValidator;
 import org.apache.commons.codec.net.URLCodec;
+
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 public class URLManager {
     private final URLFrontier urlFrontier;
@@ -70,6 +72,29 @@ public class URLManager {
         return urlValidator.isValid(url);
     }
 
+
+        //checks for robot.txt
+//    public  boolean isUrlAllowed(String url) {
+//
+//
+//    }
+//    private  byte[] getContentFromUrl(String url) {
+//        try {
+//            // Connect to the URL and fetch the content
+//            Connection connection = Jsoup.connect(url);
+//            Document document = connection.get();
+//            String content = document.outerHtml();
+//
+//            // Convert the content to a byte array
+//            return content.getBytes();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return new byte[0];
+//        }
+//    }
+
+
+
     public String shortenURL(String url) {
         // Implement logic to shorten URLs if needed
         return url;
@@ -88,11 +113,14 @@ public class URLManager {
                 // Remake with same parts, less the fragment:
                 uri = new URI(uri.getScheme(), uri.getSchemeSpecificPart(), null);
             }
+
             URI normalizedURI = uri.normalize();
             String normalizedURL = normalizedURI.toString();
             // Return the normalized url
             normalizedURL = apacheNormalization(normalizedURL);
-            //            if (!url.equals(normalizedURL)) Logger.log(url + " --normalized--> " + normalizedURL);
+
+//            if (!url.equals(normalizedURL)) Logger.log(url + " --normalized--> " + normalizedURL);
+
             return normalizedURL.toLowerCase();
         } catch (URISyntaxException e) {
             Logger.logError(STR."Invalid URL: \{url}", e);
@@ -112,6 +140,9 @@ public class URLManager {
             throw new RuntimeException(e);
         }
     }
+
+
+
 
     private int prioritizeURL(String url) {
         // Implement URL prioritization logic

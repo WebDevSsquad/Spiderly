@@ -3,12 +3,12 @@ import org.apache.commons.codec.digest.DigestUtils;
 import java.io.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.PriorityQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 public class URLFrontier {
     // URL Queue Handler's data members
     private static final String SEED_FILE = "src/main/resources/seed.txt";
-    private final PriorityQueue<URLPriorityPair> urlQueue;
+    private final PriorityBlockingQueue<URLPriorityPair> urlQueue;
 
     private static final String HASHED_URL_FILE = "src/main/resources/hashed_urls.txt";
     private final ConcurrentHashMap<String, Boolean> hashedURLs;
@@ -16,7 +16,7 @@ public class URLFrontier {
     // Visited Pages Handler's data members
     private static final String HASHED_PAGE_FILE = "src/main/resources/visited_pages.txt";
     private final ConcurrentHashMap<String, Boolean> hashedPage;
-    public URLFrontier(PriorityQueue<URLPriorityPair> urlQueue,
+    public URLFrontier(PriorityBlockingQueue<URLPriorityPair> urlQueue,
                        ConcurrentHashMap<String, Boolean> hashedPage,
                        ConcurrentHashMap<String, Boolean> hashedURLs) {
         this.urlQueue = urlQueue;
@@ -24,15 +24,15 @@ public class URLFrontier {
         this.hashedURLs = hashedURLs;
     }
 
-    public synchronized boolean isEmpty() {
+    public  boolean isEmpty() {
         return urlQueue.isEmpty();
     }
 
-    public synchronized URLPriorityPair getNextURL() {
+    public  URLPriorityPair getNextURL() {
         return urlQueue.poll();
     }
 
-    public synchronized boolean addURL(String url, int priority, int depth) {
+    public  boolean addURL(String url, int priority, int depth) {
         URLPriorityPair newURL = new URLPriorityPair(url, priority, depth);
         urlQueue.offer(newURL);
         return true;
@@ -45,11 +45,11 @@ public class URLFrontier {
         return DigestUtils.md5Hex(url).toUpperCase();
     }
 
-    public PriorityQueue<URLPriorityPair> getQueue() {
+    public PriorityBlockingQueue<URLPriorityPair> getQueue() {
         return urlQueue;
     }
 
-    public static void saveQueueToFile(PriorityQueue<URLPriorityPair> originalQueue) {
+    public static void saveQueueToFile(PriorityBlockingQueue<URLPriorityPair> originalQueue) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(SEED_FILE))) {
             // Iterate over the entries of the queue and write each entry to the file
             for (URLPriorityPair pair : originalQueue) {
@@ -61,8 +61,8 @@ public class URLFrontier {
         }
     }
 
-    public static PriorityQueue<URLPriorityPair> loadQueueFromFile() {
-        PriorityQueue<URLPriorityPair> queue =new PriorityQueue<>();
+    public static PriorityBlockingQueue<URLPriorityPair> loadQueueFromFile() {
+        PriorityBlockingQueue<URLPriorityPair> queue =new PriorityBlockingQueue<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(SEED_FILE))) {
             String line;
@@ -146,7 +146,7 @@ public class URLFrontier {
     }
 
 
-    public synchronized int getUrlQueueSize(){return urlQueue.size();}
+    public  int getUrlQueueSize(){return urlQueue.size();}
 }
 
 class URLPriorityPair implements Comparable {

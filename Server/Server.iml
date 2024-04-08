@@ -27,5 +27,8 @@
     <orderEntry type="library" name="guava-21.0" level="project" />
     <orderEntry type="library" name="google-collect-0.5" level="project" />
     <orderEntry type="library" name="lib" level="project" />
+    <orderEntry type="library" name="crawler-commons-1.4" level="project" />
+    <orderEntry type="library" name="slf4j-api-2.0.9" level="project" />
+    <orderEntry type="library" name="log4j-slf4j2-impl-2.23.1" level="project" />
   </component>
 </module>
