@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="httpclient5-5.3.1">
+  <library name="url-validator">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/httpclient5-5.3.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/commons-validator-1.8.0.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
