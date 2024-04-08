@@ -1,9 +1,11 @@
+package Crawler;
+
 /**
- * The Logger class provides functionality for logging messages,
+ * The Crawler.Logger class provides functionality for logging messages,
  * errors, warnings, and other events during the crawling process.
  * It facilitates monitoring, debugging, and error tracking.
  */
-// use java.util.logging.Logger; later
+// use java.util.logging.Crawler.Logger; later
 public class Logger {
     public static void log(String message) {
         System.out.println(message);
