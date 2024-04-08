@@ -1,7 +1,5 @@
 package src;
-
 import org.tartarus.snowball.ext.PorterStemmer;
-import java.util.ArrayList;
 
 public class Stemmer {
     public Stemmer() {}
