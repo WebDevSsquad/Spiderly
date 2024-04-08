@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.IOException;
-import java.net.URL;
-
 
 public class Parser {
     /**
@@ -31,7 +29,7 @@ public class Parser {
         return true; // URL does not match any disallowed path
     }
 
-    public Document parse(String url) throws IOException {
+    public Document parse(String url) {
         try {
             Connection connect = Jsoup.connect(url);
             Document doc = connect.get();
@@ -55,14 +53,8 @@ public class Parser {
      */
     public List<String> readRobotsTxt(String hostDomain) {
         try {
-            // Create a URL object from the provided URL string
-            URL url = new URL(hostDomain);
-
-            // Extract the host domain from the URL object
-            String host = hostDomain;
-
             // Construct the URL for the robots.txt file
-            String robotsUrl = host + "/robots.txt";
+            String robotsUrl = STR."\{hostDomain}/robots.txt";
 
             // Fetch the content of the robots.txt file using Jsoup
             Document doc = Jsoup.connect(robotsUrl).get();
@@ -94,7 +86,7 @@ public class Parser {
         System.out.println(filteredSection);
 
         // Define the pattern to match Disallow directives and paths
-        Pattern pattern = Pattern.compile("Disallow:\\s*(/[^\\s]*)", Pattern.CASE_INSENSITIVE);
+        Pattern pattern = Pattern.compile("Disallow:\\s*(/\\S*)", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(filteredSection);
 
         // Iterate over matches and extract paths
