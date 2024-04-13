@@ -1,5 +1,11 @@
 package Crawler;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URLConnection;
+import java.net.URL;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
@@ -68,6 +74,40 @@ public class URLManager {
         return urlValidator.isValid(url);
     }
 
+
+    /**
+     * Extracts the host domain from a given URL string.
+     *
+     * @param urlString The URL string from which to extract the host domain.
+     * @return The host domain extracted from the URL string, or an empty string if extraction fails.
+     */
+    public String extractHost(String urlString) {
+        try {
+            URL url = new URL(urlString);
+            String host = url.getHost();
+            //System.out.println("Host domain: " + host);
+            return host;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    /**
+     * Extracts the path part of the URL after the host domain.
+     *
+     * @param urlString The URL from which to extract the path.
+     * @return The path part of the URL after the host domain.
+     */
+    public String extractPath(String urlString) {
+        try {
+            URI uri = new URI(urlString);
+            return uri.getPath();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            return null; // Return null if unable to extract URL path
+        }
+    }
 
         //checks for robot.txt
 //    public  boolean isUrlAllowed(String url) {
@@ -162,7 +202,6 @@ public class URLManager {
     public URLFrontier getUrlFrontier() {
         return urlFrontier;
     }
-
 
     public void saveState() {
         URLFrontier.saveQueueToFile(urlFrontier.getQueue());
