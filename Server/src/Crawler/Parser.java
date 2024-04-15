@@ -98,14 +98,14 @@ public class Parser {
         return disallowedPaths;
     }
 
-    public static void main(String[] args) {
-        Parser reader = new Parser();
-        URLManager urlManager = new URLManager();
-        String host = "https://example.com";
-        List<String> disallowedPaths = reader.readRobotsTxt(host);
-        System.out.println("Disallowed Paths for '*' User-agent:");
-        for (String path : disallowedPaths) {
-            System.out.println(path);
-        }
-    }
+//    public static void main(String[] args) {
+//        Parser reader = new Parser();
+//        URLManager urlManager = new URLManager();
+//        String host = "https://example.com";
+//        List<String> disallowedPaths = reader.readRobotsTxt(host);
+//        System.out.println("Disallowed Paths for '*' User-agent:");
+//        for (String path : disallowedPaths) {
+//            System.out.println(path);
+//        }
+//    }
 }

@@ -1,14 +1,40 @@
 package Crawler;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+import com.mongodb.client.MongoCollection;
+
 public class CrawlerSystem {
-    private final int THRESHOLD = 2;
+    private final int THRESHOLD = 3;
+    private final String connectionString = "mongodb://localhost:27017";
+    private final String DATABASE_NAME = "Crawler";
+
 
     public void main(String[] args) {
         int threadCount = Integer.parseInt(args[0]);
 
 
         System.out.println(threadCount);
-        URLManager urlManager = new URLManager();
+
+        //----------------------------------------------------Database--------------------------------------------------
+
+        //initialise the database connection
+        // Connect to MongoDB server
+        MongoClient mongoClient = MongoClients.create(connectionString);
+
+        // Access a MongoDB database
+        MongoDatabase database = mongoClient.getDatabase(DATABASE_NAME);
+
+        // Get a collection from the database
+        MongoCollection<Document> seedCollection = database.getCollection("seed");
+        MongoCollection<Document> visitedPagesCollection = database.getCollection("visited_pages");
+        MongoCollection<Document> visitedLinksCollection = database.getCollection("visited_urls");
+        MongoCollection<Document> documentsCollection = database.getCollection("documents");
+        //--------------------------------------------------------------------------------------------------------------
+
+        URLManager urlManager = new URLManager(seedCollection,visitedPagesCollection,visitedLinksCollection,documentsCollection);
 
         Thread[] threads = new Thread[threadCount];
 
@@ -16,10 +42,26 @@ public class CrawlerSystem {
             threads[i] = new Thread(new Crawler(urlManager, THRESHOLD));
         }
 
+
+        // save the state of the crawler when finish or interrupted
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            urlManager.saveState();
-            System.out.println("State Saved Successfully");
-            Runtime.getRuntime().halt(0);
+            synchronized (urlManager) {
+                try {
+                    urlManager.saveState();
+                    System.out.println("State Saved Successfully");
+                } catch (Exception e) {
+                    System.err.println(STR."Error while saving state: \{e.getMessage()}");
+                }
+
+                // Close MongoDB client
+                try {
+                    mongoClient.close();
+                    System.out.println("MongoDB client closed successfully.");
+                } catch (Exception e) {
+                    System.err.println(STR."Error while closing MongoDB client: \{e.getMessage()}");
+                }
+            }
+
         }));
 
 

@@ -1,29 +1,33 @@
 package Crawler;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URLConnection;
-import java.net.URL;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-
+import com.mongodb.client.MongoCollection;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.EncoderException;
-
-import org.apache.commons.validator.UrlValidator;
 import org.apache.commons.codec.net.URLCodec;
+import org.apache.commons.validator.UrlValidator;
+import org.bson.Document;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 public class URLManager {
     private final URLFrontier urlFrontier;
 
-    public URLManager() {
-        urlFrontier = new URLFrontier(URLFrontier.loadQueueFromFile(),
-                URLFrontier.loadVisitedPages(1),
-                URLFrontier.loadVisitedPages(2));
+    private final MongoCollection<Document> seedCollection;
+    private final MongoCollection<Document> visitedPagesCollection;
+    private final MongoCollection<Document> visitedLinksCollection;
+
+    private final MongoCollection<Document> documentsCollection;
+
+    public URLManager(MongoCollection<Document> seedCollection, MongoCollection<Document> visitedPagesCollection, MongoCollection<Document> visitedLinksCollection, MongoCollection<Document> documentsCollection) {
+        this.documentsCollection = documentsCollection;
+        urlFrontier = new URLFrontier(URLFrontier.loadQueueFromFile(seedCollection), visitedPagesCollection, visitedLinksCollection);
+        this.seedCollection = seedCollection;
+        this.visitedPagesCollection = visitedPagesCollection;
+        this.visitedLinksCollection = visitedLinksCollection;
     }
 
     public static void Main(String[] args) {
@@ -109,28 +113,6 @@ public class URLManager {
         }
     }
 
-        //checks for robot.txt
-//    public  boolean isUrlAllowed(String url) {
-//
-//
-//    }
-//    private  byte[] getContentFromUrl(String url) {
-//        try {
-//            // Connect to the URL and fetch the content
-//            Connection connection = Jsoup.connect(url);
-//            Document document = connection.get();
-//            String content = document.outerHtml();
-//
-//            // Convert the content to a byte array
-//            return content.getBytes();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            return new byte[0];
-//        }
-//    }
-
-
-
     public String shortenURL(String url) {
         // Implement logic to shorten URLs if needed
         return url;
@@ -164,7 +146,7 @@ public class URLManager {
         }
     }
 
-    public  String apacheNormalization(String urlString) {
+    public String apacheNormalization(String urlString) {
         try {
             // Decode percent-encoded characters
             String decodedURL = URLDecoder.decode(urlString, StandardCharsets.UTF_8);
@@ -176,8 +158,6 @@ public class URLManager {
             throw new RuntimeException(e);
         }
     }
-
-
 
 
     private int prioritizeURL(String url) {
@@ -204,8 +184,9 @@ public class URLManager {
     }
 
     public void saveState() {
-        URLFrontier.saveQueueToFile(urlFrontier.getQueue());
-        URLFrontier.saveVisitedPages(urlFrontier.getHashedPage(), 1);
-        URLFrontier.saveVisitedPages(urlFrontier.getHashedURLs(), 2);
+        URLFrontier.saveQueueToFile(urlFrontier.getQueue(), seedCollection);
+        URLFrontier.saveVisitedPages(urlFrontier.getHashedPage(), visitedPagesCollection);
+        URLFrontier.saveVisitedPages(urlFrontier.getHashedURLs(), visitedLinksCollection);
+        URLFrontier.saveDocuments(urlFrontier.getDocuments(),documentsCollection);
     }
 }

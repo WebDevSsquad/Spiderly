@@ -20,15 +20,7 @@ public class Crawler implements Runnable {
 
     @Override
     public void run() {
-        int intervalSeconds = 10, depth = 0; // Specify the interval in seconds
         URLFrontier urlFrontier = urlManager.getUrlFrontier();
-//        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-//
-//        executor.scheduleAtFixedRate(() -> {
-//            UrlDiscovery.saveQueueToFile(Queue.getQueue());
-//            VisitedPageHandler.saveVisitedPages(visitedPageHandler.getHashedPage());
-//            System.out.println("State Saved");
-//        }, 5, intervalSeconds, TimeUnit.SECONDS);
         while (true) {
             try {
                 int queueSize = urlFrontier.getUrlQueueSize();
@@ -44,10 +36,6 @@ public class Crawler implements Runnable {
                   if(urlFrontier.getHashedPageSize() >= 6000) return;
 
                 }
-
-
-
-                //Thread.sleep(1000);
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -65,6 +53,9 @@ public class Crawler implements Runnable {
 
         if (doc != null) {
             String docText = doc.text();
+
+            urlFrontier.addDocument(docText,doc.title(),url);
+
             // Check if the url is a seed
             if (!urlFrontier.isVisitedURL(url)) urlFrontier.markURL(url);
             // Check if the page is duplicated
