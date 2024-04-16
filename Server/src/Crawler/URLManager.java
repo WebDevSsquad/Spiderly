@@ -35,8 +35,7 @@ public class URLManager {
     }
 
     public void addToFrontier(String url, int priority, int depth) {
-        String shortenedURL = shortenURL(url);
-        if (urlFrontier.addURL(shortenedURL, priority, depth))
+        if (urlFrontier.addURL(url, priority, depth))
             urlFrontier.markURL(url);
     }
 
@@ -111,11 +110,6 @@ public class URLManager {
             e.printStackTrace();
             return null; // Return null if unable to extract URL path
         }
-    }
-
-    public String shortenURL(String url) {
-        // Implement logic to shorten URLs if needed
-        return url;
     }
 
     public String normalizeURL(String url) {

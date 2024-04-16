@@ -11,6 +11,9 @@ public class CrawlerSystem {
     private final String connectionString = "mongodb://localhost:27017";
     private final String DATABASE_NAME = "Crawler";
 
+    private long start;
+
+    private long end;
 
     public void main(String[] args) {
         int threadCount = Integer.parseInt(args[0]);
@@ -61,6 +64,9 @@ public class CrawlerSystem {
                     System.err.println(STR."Error while closing MongoDB client: \{e.getMessage()}");
                 }
             }
+            end = System.currentTimeMillis();
+            System.out.println((end - start) / 1000);
+            System.out.println("All threads have finished execution.");
 
         }));
 
@@ -68,7 +74,7 @@ public class CrawlerSystem {
         for (Thread thread : threads) {
             thread.start();
         }
-        long start = System.currentTimeMillis();
+        start = System.currentTimeMillis();
 
         // Wait for each thread to finish
         for (Thread thread : threads) {
@@ -78,7 +84,7 @@ public class CrawlerSystem {
                 e.printStackTrace();
             }
         }
-        long end = System.currentTimeMillis();
+        end = System.currentTimeMillis();
         System.out.println((end - start) / 1000);
         System.out.println("All threads have finished execution.");
     }

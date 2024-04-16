@@ -14,15 +14,16 @@ public class Parser {
     /**
      * Checks if the given URL is allowed based on the robots.txt rules.
      *
-     * @param url The URL to check.
+     * @param urlPath The URL to check.
      * @param disallowedPaths The list of disallowed paths from robots.txt.
      * @return true if the URL is allowed, false otherwise.
      */
-    public boolean isUrlAllowed(String url, List<String> disallowedPaths) {
+    public boolean isUrlAllowed(String urlPath, List<String> disallowedPaths) {
         // Iterate over disallowed paths for the section's user-agent
+        System.out.println(STR."Checking \{urlPath}");
         for (String disallowPath : disallowedPaths) {
             System.out.println(disallowPath);
-            if (url.startsWith(disallowPath)) {
+            if (urlPath.startsWith(disallowPath)) {
                 return false; // URL matches a disallowed path
             }
         }
@@ -54,7 +55,7 @@ public class Parser {
     public List<String> readRobotsTxt(String hostDomain) {
         try {
             // Construct the URL for the robots.txt file
-            String robotsUrl = STR."\{hostDomain}/robots.txt";
+            String robotsUrl = STR."http://\{hostDomain}/robots.txt";
 
             // Fetch the content of the robots.txt file using Jsoup
             Document doc = Jsoup.connect(robotsUrl).get();
@@ -80,32 +81,36 @@ public class Parser {
      * @return A list of disallowed paths for the '*' user-agent.
      */
     public List<String> extractDisallowedPaths(String robotsTxtContent) {
-        List<String> disallowedPaths = new ArrayList<>();
-        String filteredSection = robotsTxtContent.split("(?i)^User-agent:\\s*")[1];
-        filteredSection = filteredSection.split("(?i)^User-agent:")[0];
-        System.out.println(filteredSection);
+        try {
+            List<String> disallowedPaths = new ArrayList<>();
+            String filteredSection = robotsTxtContent.split("User-agent:\\s*\\*")[1];
+            filteredSection = filteredSection.split("(?i)^User-agent:")[0];
+            System.out.println(filteredSection);
 
-        // Define the pattern to match Disallow directives and paths
-        Pattern pattern = Pattern.compile("Disallow:\\s*(/\\S*)", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(filteredSection);
+            // Define the pattern to match Disallow directives and paths
+            Pattern pattern = Pattern.compile("Disallow:\\s*(/\\S*)", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(filteredSection);
 
-        // Iterate over matches and extract paths
-        while (matcher.find()) {
-            String path = matcher.group(1).trim();
-            disallowedPaths.add(path);
+            // Iterate over matches and extract paths
+            while (matcher.find()) {
+                String path = matcher.group(1).trim();
+                disallowedPaths.add(path);
+            }
+            return disallowedPaths;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println(STR."There is no * specified: \{e}");
+            return null;
         }
-
-        return disallowedPaths;
     }
 
-//    public static void main(String[] args) {
-//        Parser reader = new Parser();
-//        URLManager urlManager = new URLManager();
-//        String host = "https://example.com";
-//        List<String> disallowedPaths = reader.readRobotsTxt(host);
-//        System.out.println("Disallowed Paths for '*' User-agent:");
-//        for (String path : disallowedPaths) {
-//            System.out.println(path);
-//        }
-//    }
+    /*public static void main(String[] args) {
+        Parser reader = new Parser();
+        String host = "www.wikipedia.org";
+        List<String> disallowedPaths = reader.readRobotsTxt(host);
+        System.out.println("Disallowed Paths for '*' User-agent:");
+        for (String path : disallowedPaths) {
+            System.out.println(path);
+        }
+        System.out.println("Is allowed? " + reader.isUrlAllowed("/wiki/Wikipedia:SDU/", disallowedPaths));
+    }*/
 }

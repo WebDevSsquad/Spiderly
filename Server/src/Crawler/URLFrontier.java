@@ -8,6 +8,7 @@ import org.bson.Document;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -23,10 +24,11 @@ public class URLFrontier {
 
     // Visited Pages Handler's data members
     private final ConcurrentHashMap<String, Boolean> hashedPage;
-
     private final MongoCollection<Document> visitedPagesCollection;
     private final MongoCollection<Document> visitedLinksCollection;
 
+    // Robots.txt disallowed paths handler
+    private final ConcurrentHashMap<String, List<String>> robotsMatcher;
 
 
     public URLFrontier(PriorityBlockingQueue<URLPriorityPair> urlQueue, MongoCollection<Document> visitedPagesCollection, MongoCollection<Document> visitedLinksCollection) {
@@ -35,6 +37,7 @@ public class URLFrontier {
         this.visitedLinksCollection = visitedLinksCollection;
         hashedURLs = new ConcurrentHashMap<>();
         hashedPage = new ConcurrentHashMap<>();
+        robotsMatcher = new ConcurrentHashMap<>();
         documents = new ConcurrentLinkedQueue<>();
     }
 
@@ -52,8 +55,8 @@ public class URLFrontier {
         return true;
     }
 
-    public void addDocument(String doc,String title ,String url) {
-        documents.offer(new Entry(doc,title,url));
+    public void addDocument(String doc, String title, String url) {
+        documents.offer(new Entry(doc, title, url));
     }
 
     private String getHash(String url) {
@@ -133,15 +136,15 @@ public class URLFrontier {
         return documents;
     }
 
-    public static void saveDocuments(ConcurrentLinkedQueue<Entry>documents, MongoCollection<Document> documentsCollection) {
-            while(!documents.isEmpty()){
+    public static void saveDocuments(ConcurrentLinkedQueue<Entry> documents, MongoCollection<Document> documentsCollection) {
+        while (!documents.isEmpty()) {
 
-                Entry entry = documents.poll();
-                Document add = new Document("title", entry.getTitle())
-                        .append("url", entry.getLink())
-                        .append("document", entry.getContent());
-                documentsCollection.insertOne(add);
-            }
+            Entry entry = documents.poll();
+            Document add = new Document("title", entry.getTitle())
+                    .append("url", entry.getLink())
+                    .append("document", entry.getContent());
+            documentsCollection.insertOne(add);
+        }
     }
 
     public ConcurrentHashMap<String, Boolean> getHashedURLs() {
@@ -156,12 +159,22 @@ public class URLFrontier {
         return hashedPage.size();
     }
 
-
     public int getUrlQueueSize() {
         return urlQueue.size();
     }
-}
 
+    public void setRobotsTxt(String host, List<String> disallowedPaths) {
+        robotsMatcher.put(host, disallowedPaths);
+    }
+
+    public boolean isRobotsTxtSet(String host) {
+        return robotsMatcher.containsKey(host);
+    }
+
+    public List<String> getDisallowedPaths(String host) {
+        return robotsMatcher.get(host);
+    }
+}
 class URLPriorityPair implements Comparable {
     private final String url;
     private final int priority;
@@ -194,6 +207,7 @@ class URLPriorityPair implements Comparable {
         return Integer.compare(this.priority, ((URLPriorityPair) other).priority);
     }
 }
+
 class Entry {
     private final String title;
     private final String content;
@@ -204,15 +218,17 @@ class Entry {
         this.content = content;
         this.link = link;
     }
+
     // Getters and setters
     public String getTitle() {
         return title;
     }
+
     public String getContent() {
         return content;
     }
+
     public String getLink() {
         return link;
     }
-
 }
