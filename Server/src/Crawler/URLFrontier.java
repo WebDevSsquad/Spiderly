@@ -27,17 +27,12 @@ public class URLFrontier {
     private final MongoCollection<Document> visitedPagesCollection;
     private final MongoCollection<Document> visitedLinksCollection;
 
-    // Robots.txt disallowed paths handler
-    private final ConcurrentHashMap<String, List<String>> robotsMatcher;
-
-
     public URLFrontier(PriorityBlockingQueue<URLPriorityPair> urlQueue, MongoCollection<Document> visitedPagesCollection, MongoCollection<Document> visitedLinksCollection) {
         this.urlQueue = urlQueue;
         this.visitedPagesCollection = visitedPagesCollection;
         this.visitedLinksCollection = visitedLinksCollection;
         hashedURLs = new ConcurrentHashMap<>();
         hashedPage = new ConcurrentHashMap<>();
-        robotsMatcher = new ConcurrentHashMap<>();
         documents = new ConcurrentLinkedQueue<>();
     }
 
@@ -163,17 +158,6 @@ public class URLFrontier {
         return urlQueue.size();
     }
 
-    public void setRobotsTxt(String host, List<String> disallowedPaths) {
-        robotsMatcher.put(host, disallowedPaths);
-    }
-
-    public boolean isRobotsTxtSet(String host) {
-        return robotsMatcher.containsKey(host);
-    }
-
-    public List<String> getDisallowedPaths(String host) {
-        return robotsMatcher.get(host);
-    }
 }
 class URLPriorityPair implements Comparable {
     private final String url;

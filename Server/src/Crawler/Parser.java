@@ -1,5 +1,6 @@
 package Crawler;
 
+import com.panforge.robotstxt.*;
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
@@ -9,25 +10,35 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.IOException;
+import java.net.URL;
 
 public class Parser {
     /**
      * Checks if the given URL is allowed based on the robots.txt rules.
      *
-     * @param urlPath The URL to check.
-     * @param disallowedPaths The list of disallowed paths from robots.txt.
+     * @param url The URL to check.
      * @return true if the URL is allowed, false otherwise.
      */
-    public boolean isUrlAllowed(String urlPath, List<String> disallowedPaths) {
-        // Iterate over disallowed paths for the section's user-agent
-        System.out.println(STR."Checking \{urlPath}");
-        for (String disallowPath : disallowedPaths) {
-            System.out.println(disallowPath);
-            if (urlPath.startsWith(disallowPath)) {
-                return false; // URL matches a disallowed path
-            }
+    public boolean isUrlAllowed(String url, String hostDomain) {
+        // Create a URL object for the website's robots.txt file
+        URL robotsTxtUrl;
+        try {
+            String robotsTxtStr = getRobotsTxtURL(hostDomain);
+            robotsTxtUrl = new URL(robotsTxtStr);
+        } catch (IOException e) {
+            System.err.println(STR."Error creating URL: \{e.getMessage()}");
+            return true;
         }
-        return true; // URL does not match any disallowed path
+
+        // Parse the robots.txt file
+        try {
+            RobotsTxt robotsTxt = RobotsTxt.read(robotsTxtUrl.openStream());
+            // Check if a specific user-agent is allowed to access a URL
+            return robotsTxt.query("*", url);
+        } catch (IOException e) {
+            System.err.println(STR."Error reading robots.txt: \{e.getMessage()}");
+            return true;
+        }
     }
 
     public Document parse(String url) {
@@ -50,28 +61,10 @@ public class Parser {
      * Extracts the host domain from a given URL string and reads the robots.txt file.
      *
      * @param hostDomain The URL string from which to read the robots.txt file.
-     * @return The content of the robots.txt file, or an empty string if reading fails or the file does not exist.
+     * @return The url that leads to the robots.txt file, or an empty string if reading fails or the file does not exist.
      */
-    public List<String> readRobotsTxt(String hostDomain) {
-        try {
-            // Construct the URL for the robots.txt file
-            String robotsUrl = STR."http://\{hostDomain}/robots.txt";
-
-            // Fetch the content of the robots.txt file using Jsoup
-            Document doc = Jsoup.connect(robotsUrl).get();
-            System.out.println(doc.text());
-            // Get the text content of the document
-            return extractDisallowedPaths(doc.text());
-        } catch (HttpStatusException e) {
-            // Handle the case where the robots.txt file does not exist
-            System.out.println("Robots.txt file not found for the provided URL.");
-        } catch (IOException e) {
-            // If an exception occurs during URL processing or file reading, print the stack trace
-            e.printStackTrace();
-        }
-
-        // Return an empty string if reading fails or the file does not exist
-        return null;
+    private String getRobotsTxtURL(String hostDomain) {
+        return STR."http://\{hostDomain}/robots.txt";
     }
 
     /**
@@ -104,13 +97,34 @@ public class Parser {
     }
 
     /*public static void main(String[] args) {
-        Parser reader = new Parser();
-        String host = "www.wikipedia.org";
-        List<String> disallowedPaths = reader.readRobotsTxt(host);
-        System.out.println("Disallowed Paths for '*' User-agent:");
-        for (String path : disallowedPaths) {
-            System.out.println(path);
+        // Create a URL object for the website's robots.txt file
+        URL robotsTxtUrl;
+        try {
+            robotsTxtUrl = new URL("https://wikipedia.com/robots.txt");
+        } catch (IOException e) {
+            System.err.println("Error creating URL: " + e.getMessage());
+            return;
         }
-        System.out.println("Is allowed? " + reader.isUrlAllowed("/wiki/Wikipedia:SDU/", disallowedPaths));
+
+        // Parse the robots.txt file
+        try {
+            RobotsTxt robotsTxt = RobotsTxt.read(robotsTxtUrl.openStream());
+            List<String> disallowedList = robotsTxt.getDisallowList("*");
+
+            // Print the list of disallowed URLs
+            System.out.println("Disallowed URLs:");
+            for (String url : disallowedList) {
+                System.out.println(url);
+            }
+            // Check if a specific user-agent is allowed to access a URL
+            boolean isAllowed = robotsTxt.query("*", "https://wikipedia.com/wiki/Wikipedia:Redirects_for_discussion");
+            if (isAllowed) {
+                System.out.println("URL is allowed for crawling");
+            } else {
+                System.out.println("URL is not allowed for crawling");
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading robots.txt: " + e.getMessage());
+        }
     }*/
 }

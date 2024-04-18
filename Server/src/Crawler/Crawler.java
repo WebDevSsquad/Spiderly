@@ -56,15 +56,6 @@ public class Crawler implements Runnable {
 
             urlFrontier.addDocument(docText,doc.title(),url);
 
-            // Check if this domain's disallowed paths are set.
-            String hostname = urlManager.extractHost(url);
-            List<String> disallowedPaths = null;
-            if (!urlFrontier.isRobotsTxtSet(hostname)) {
-                disallowedPaths = parser.readRobotsTxt(hostname);
-                urlFrontier.setRobotsTxt(hostname, disallowedPaths);
-            }
-            else disallowedPaths = urlFrontier.getDisallowedPaths(hostname);
-
             // Check if the url is a seed
             if (!urlFrontier.isVisitedURL(url)) urlFrontier.markURL(url);
             // Check if the page is duplicated
@@ -78,14 +69,12 @@ public class Crawler implements Runnable {
                     continue;
                 };
                 String normalized_url = urlManager.normalizeURL(new_link);
-                if (normalized_url!=null && !normalized_url.isEmpty() && ! urlFrontier.isVisitedURL(normalized_url)) {
-                    String urlHost = urlManager.extractHost(normalized_url);
-                    String urlPath = urlManager.extractPath(normalized_url);
-                    if (urlHost.equals(hostname) && !parser.isUrlAllowed(urlPath, disallowedPaths)) {
-                        Logger.log("THE URL IS DISALLOWED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                        continue;
-                    }
-                        urlManager.handleURL(normalized_url, urlPriorityPair.getDepth() + 1);
+                String urlHost = urlManager.extractHost(normalized_url);
+                if (normalized_url != null
+                        && !normalized_url.isEmpty()
+                        && !urlFrontier.isVisitedURL(normalized_url)
+                        && parser.isUrlAllowed(normalized_url, urlHost)) {
+                    urlManager.handleURL(normalized_url, urlPriorityPair.getDepth() + 1);
                 }
             }
 
