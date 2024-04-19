@@ -35,9 +35,10 @@ public class CrawlerSystem {
         MongoCollection<Document> visitedPagesCollection = database.getCollection("visited_pages");
         MongoCollection<Document> visitedLinksCollection = database.getCollection("visited_urls");
         MongoCollection<Document> documentsCollection = database.getCollection("documents");
+        MongoCollection<Document> disallowedUrlsCollection = database.getCollection("disallowed_urls");
         //--------------------------------------------------------------------------------------------------------------
 
-        URLManager urlManager = new URLManager(seedCollection,visitedPagesCollection,visitedLinksCollection,documentsCollection);
+        URLManager urlManager = new URLManager(seedCollection,visitedPagesCollection,visitedLinksCollection,documentsCollection,disallowedUrlsCollection);
 
         Thread[] threads = new Thread[threadCount];
 

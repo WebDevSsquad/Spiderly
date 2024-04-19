@@ -5,45 +5,90 @@ import com.mongodb.client.MongoCollection;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.bson.Document;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 public class URLFrontier {
-    // URL Queue Handler's data members
+
+    //queue that holds the future seed of the crawler.this queue loads at the beginning of the program from the database to get the previous state
     private final PriorityBlockingQueue<URLPriorityPair> urlQueue;
-
-    private final ConcurrentHashMap<String, Boolean> hashedURLs;
-
+    //saves the parsed documents of the crawled page in addition to the title and url of that page
     private final ConcurrentLinkedQueue<Entry> documents;
-
-    // Visited Pages Handler's data members
+    //saves the visited or crawled urls
+    private final ConcurrentHashMap<String, Boolean> hashedURLs;
+    //saves the hostname and the disallowed url
+    private final ConcurrentHashMap<String, String> DisallowedURLS;
+    //save hashed parsed document of the page content
     private final ConcurrentHashMap<String, Boolean> hashedPage;
-    private final MongoCollection<Document> visitedPagesCollection;
-    private final MongoCollection<Document> visitedLinksCollection;
 
-    public URLFrontier(PriorityBlockingQueue<URLPriorityPair> urlQueue, MongoCollection<Document> visitedPagesCollection, MongoCollection<Document> visitedLinksCollection) {
+    // MongoDB Collections
+
+    //Collection for crawled pages , contains the parsed doc hashed to overcome the problem of pages which have the same url
+    private final MongoCollection<Document> visitedPagesCollection;
+    //Collection for links that is crawled or in queue to prevent putting duplicates in queue and visiting the same url twice
+    private final MongoCollection<Document> visitedLinksCollection;
+    //Collection to save the disallowed urls from a certain host this prevent downloading the robots.txt file twice and visiting a disallowed url
+    private final MongoCollection<Document> disallowedUrlsCollection;
+
+
+    public URLFrontier(PriorityBlockingQueue<URLPriorityPair> urlQueue,
+                       MongoCollection<Document> visitedPagesCollection,
+                       MongoCollection<Document> visitedLinksCollection,
+                       MongoCollection<Document> disallowedUrlsCollection) {
         this.urlQueue = urlQueue;
         this.visitedPagesCollection = visitedPagesCollection;
         this.visitedLinksCollection = visitedLinksCollection;
+        this.disallowedUrlsCollection = disallowedUrlsCollection;
         hashedURLs = new ConcurrentHashMap<>();
         hashedPage = new ConcurrentHashMap<>();
         documents = new ConcurrentLinkedQueue<>();
+        DisallowedURLS = new ConcurrentHashMap<>();
     }
 
-    public boolean isEmpty() {
-        return urlQueue.isEmpty();
-    }
+    //----------------------------------------Getters-------------------------------------------------------------------
 
     public URLPriorityPair getNextURL() {
         return urlQueue.poll();
     }
 
+    private String getHash(String url) {
+        return DigestUtils.md5Hex(url).toUpperCase();
+    }
+
+    public PriorityBlockingQueue<URLPriorityPair> getQueue() {
+        return urlQueue;
+    }
+
+    public ConcurrentLinkedQueue<Entry> getDocuments() {
+        return documents;
+    }
+
+    public ConcurrentHashMap<String, Boolean> getHashedURLs() {
+        return hashedURLs;
+    }
+
+    public ConcurrentHashMap<String, Boolean> getHashedPage() {
+        return hashedPage;
+    }
+
+    public ConcurrentHashMap<String, String> getDisallowedURLS() {
+        return DisallowedURLS;
+    }
+
+    public int getHashedPageSize() {
+        return hashedPage.size();
+    }
+
+    public int getUrlQueueSize() {
+        return urlQueue.size();
+    }
+
+
+    //------------------------------------------------------------------------------------------------------------------
+
+    //-------------------------------------------Adders-----------------------------------------------------------------
     public boolean addURL(String url, int priority, int depth) {
         URLPriorityPair newURL = new URLPriorityPair(url, priority, depth);
         urlQueue.offer(newURL);
@@ -54,17 +99,64 @@ public class URLFrontier {
         documents.offer(new Entry(doc, title, url));
     }
 
-    private String getHash(String url) {
-        // 1. Compress URL
-        // 2.Implement Hash Function
-        return DigestUtils.md5Hex(url).toUpperCase();
+
+    public void markURL(String url) {
+        String md5Hex = getHash(url);
+        hashedURLs.put(md5Hex, true);
     }
 
-    public PriorityBlockingQueue<URLPriorityPair> getQueue() {
-        return urlQueue;
+
+    public void markPage(String url) {
+        String md5Hex = getHash(url);
+        hashedPage.put(md5Hex, true);
     }
 
-    public static void saveQueueToFile(PriorityBlockingQueue<URLPriorityPair> originalQueue, MongoCollection<Document> seedCollection) {
+    public void disallowUrl(String url, String host) {
+        String md5Hex = getHash(url);
+        DisallowedURLS.put(md5Hex, getHash(host));
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+
+    //-------------------------------------------Booleans---------------------------------------------------------------
+    public boolean isEmpty() {
+        return urlQueue.isEmpty();
+    }
+
+    public boolean isVisitedURL(String url) {
+        String md5Hex = getHash(url);
+        Document criteria = new Document("hash", md5Hex);
+        long count = visitedLinksCollection.countDocuments(criteria);
+        return hashedURLs.containsKey(md5Hex) || count != 0;
+    }
+
+    public boolean isVisitedPage(String doc) {
+        String md5Hex = getHash(doc);
+        Document criteria = new Document("hash", md5Hex);
+        long count = visitedPagesCollection.countDocuments(criteria);
+        return hashedPage.containsKey(md5Hex) || count != 0;
+    }
+
+    public boolean isAllowedUrl(String url) {
+        String md5Hex = getHash(url);
+        Document criteria = new Document("disallowed", md5Hex);
+        long count = disallowedUrlsCollection.countDocuments(criteria);
+        return DisallowedURLS.containsKey(md5Hex) || count != 0;
+    }
+
+    public boolean isHostProcessed(String host) {
+        String md5Hex = getHash(host);
+        Document criteria = new Document("host", md5Hex);
+        long count = disallowedUrlsCollection.countDocuments(criteria);
+        return DisallowedURLS.containsValue(md5Hex) || count != 0;
+    }
+
+
+    //------------------------------------------------------------------------------------------------------------------
+
+    //-------------------------------------------State Handlers---------------------------------------------------------
+
+    public static void saveQueue(PriorityBlockingQueue<URLPriorityPair> originalQueue, MongoCollection<Document> seedCollection) {
         for (URLPriorityPair pair : originalQueue) {
             // Create a document representing the URLPriorityPair object
             Document document = new Document("url", pair.getUrl())
@@ -93,31 +185,6 @@ public class URLFrontier {
         return queue;
     }
 
-    public void markURL(String url) {
-        String md5Hex = getHash(url);
-        hashedURLs.put(md5Hex, true);
-    }
-
-    public boolean isVisitedURL(String url) {
-        String md5Hex = getHash(url);
-        Document criteria = new Document("hash", md5Hex);
-        long count = visitedLinksCollection.countDocuments(criteria);
-        return hashedURLs.containsKey(md5Hex) || count != 0;
-    }
-
-    public void markPage(String url) {
-        System.out.println("add");
-        String md5Hex = getHash(url);
-        hashedPage.put(md5Hex, true);
-    }
-
-    public boolean isVisitedPage(String doc) {
-        String md5Hex = getHash(doc);
-        Document criteria = new Document("hash", md5Hex);
-        long count = visitedPagesCollection.countDocuments(criteria);
-        return hashedPage.containsKey(md5Hex) || count != 0;
-    }
-
     public static void saveVisitedPages(ConcurrentHashMap<String, Boolean> hashedMap, MongoCollection<Document> collection) {
         // Iterate over the ConcurrentHashMap and insert URL strings into the database
         for (String url : hashedMap.keySet()) {
@@ -127,38 +194,30 @@ public class URLFrontier {
         }
     }
 
-    public ConcurrentLinkedQueue<Entry> getDocuments() {
-        return documents;
-    }
-
-    public static void saveDocuments(ConcurrentLinkedQueue<Entry> documents, MongoCollection<Document> documentsCollection) {
+    public static void saveDocuments(ConcurrentLinkedQueue<Entry> documents, MongoCollection<Document> collection) {
         while (!documents.isEmpty()) {
 
             Entry entry = documents.poll();
             Document add = new Document("title", entry.getTitle())
                     .append("url", entry.getLink())
                     .append("document", entry.getContent());
-            documentsCollection.insertOne(add);
+            collection.insertOne(add);
         }
     }
 
-    public ConcurrentHashMap<String, Boolean> getHashedURLs() {
-        return hashedURLs;
+    public static void saveUrlDisallowedPaths(ConcurrentHashMap<String, String> hashedMap, MongoCollection<Document> collection) {
+        for (Map.Entry<String, String> entry : hashedMap.entrySet()) {
+            String disallowed = entry.getKey();
+            String host = entry.getValue();
+            Document document = new Document("disallowed", disallowed).append("host", host);
+            collection.insertOne(document);
+        }
     }
 
-    public ConcurrentHashMap<String, Boolean> getHashedPage() {
-        return hashedPage;
-    }
-
-    public int getHashedPageSize() {
-        return hashedPage.size();
-    }
-
-    public int getUrlQueueSize() {
-        return urlQueue.size();
-    }
+    //------------------------------------------------------------------------------------------------------------------
 
 }
+
 class URLPriorityPair implements Comparable {
     private final String url;
     private final int priority;

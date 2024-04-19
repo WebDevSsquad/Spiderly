@@ -20,14 +20,19 @@ public class URLManager {
     private final MongoCollection<Document> visitedPagesCollection;
     private final MongoCollection<Document> visitedLinksCollection;
 
+    private final MongoCollection<Document> disallowedUrlsCollection;
     private final MongoCollection<Document> documentsCollection;
 
-    public URLManager(MongoCollection<Document> seedCollection, MongoCollection<Document> visitedPagesCollection, MongoCollection<Document> visitedLinksCollection, MongoCollection<Document> documentsCollection) {
+    public URLManager(MongoCollection<Document> seedCollection, MongoCollection<Document> visitedPagesCollection,
+                      MongoCollection<Document> visitedLinksCollection,
+                      MongoCollection<Document> documentsCollection,
+                      MongoCollection<Document> disallowedUrlsCollection) {
         this.documentsCollection = documentsCollection;
-        urlFrontier = new URLFrontier(URLFrontier.loadQueueFromFile(seedCollection), visitedPagesCollection, visitedLinksCollection);
+        urlFrontier = new URLFrontier(URLFrontier.loadQueueFromFile(seedCollection), visitedPagesCollection, visitedLinksCollection,disallowedUrlsCollection);
         this.seedCollection = seedCollection;
         this.visitedPagesCollection = visitedPagesCollection;
         this.visitedLinksCollection = visitedLinksCollection;
+        this.disallowedUrlsCollection = disallowedUrlsCollection;
     }
 
     public static void Main(String[] args) {
@@ -178,9 +183,10 @@ public class URLManager {
     }
 
     public void saveState() {
-        URLFrontier.saveQueueToFile(urlFrontier.getQueue(), seedCollection);
+        URLFrontier.saveQueue(urlFrontier.getQueue(), seedCollection);
         URLFrontier.saveVisitedPages(urlFrontier.getHashedPage(), visitedPagesCollection);
         URLFrontier.saveVisitedPages(urlFrontier.getHashedURLs(), visitedLinksCollection);
-        URLFrontier.saveDocuments(urlFrontier.getDocuments(),documentsCollection);
+        URLFrontier.saveDocuments(urlFrontier.getDocuments(), documentsCollection);
+        URLFrontier.saveUrlDisallowedPaths(urlFrontier.getDisallowedURLS(),disallowedUrlsCollection);
     }
 }
