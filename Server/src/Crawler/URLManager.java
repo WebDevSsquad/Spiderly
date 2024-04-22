@@ -13,6 +13,8 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
+import static java.lang.StringTemplate.STR;
+
 public class URLManager {
     private final URLFrontier urlFrontier;
 
@@ -28,7 +30,7 @@ public class URLManager {
                       MongoCollection<Document> documentsCollection,
                       MongoCollection<Document> disallowedUrlsCollection) {
         this.documentsCollection = documentsCollection;
-        urlFrontier = new URLFrontier(URLFrontier.loadQueueFromFile(seedCollection), visitedPagesCollection, visitedLinksCollection,disallowedUrlsCollection);
+        urlFrontier = new URLFrontier(URLFrontier.loadQueueFromFile(seedCollection), visitedPagesCollection, visitedLinksCollection, disallowedUrlsCollection);
         this.seedCollection = seedCollection;
         this.visitedPagesCollection = visitedPagesCollection;
         this.visitedLinksCollection = visitedLinksCollection;
@@ -184,9 +186,9 @@ public class URLManager {
 
     public void saveState() {
         URLFrontier.saveQueue(urlFrontier.getQueue(), seedCollection);
-        URLFrontier.saveVisitedPages(urlFrontier.getHashedPage(), visitedPagesCollection);
-        URLFrontier.saveVisitedPages(urlFrontier.getHashedURLs(), visitedLinksCollection);
+        URLFrontier.saveCrawledPages(urlFrontier.getHashedPage(), visitedPagesCollection);
+        URLFrontier.saveVisitedPages(urlFrontier.getHashedURLs(), urlFrontier.getCrawledURLs(), visitedLinksCollection);
         URLFrontier.saveDocuments(urlFrontier.getDocuments(), documentsCollection);
-        URLFrontier.saveUrlDisallowedPaths(urlFrontier.getDisallowedURLS(),disallowedUrlsCollection);
+        URLFrontier.saveUrlDisallowedPaths(urlFrontier.getDisallowedURLS(), disallowedUrlsCollection);
     }
 }

@@ -48,7 +48,7 @@ public class Crawler implements Runnable {
 
         URLFrontier urlFrontier = urlManager.getUrlFrontier();
 
-        Document doc = parser.parse(url,urlManager,urlFrontier);
+        Document doc = parser.parse(url, urlManager, urlFrontier);
 
         if (doc != null) {
             String docText = doc.text();
@@ -62,6 +62,8 @@ public class Crawler implements Runnable {
 
             urlFrontier.addDocument(docText, doc.title(), url);
 
+            urlFrontier.markCrawled(url);
+
             if (urlPriorityPair.getDepth() == -1) return;
             for (Element link : doc.select("a[href]")) {
                 String new_link = link.absUrl("href");
@@ -71,11 +73,11 @@ public class Crawler implements Runnable {
                 }
 
                 String normalized_url = urlManager.normalizeURL(new_link);
-                if (normalized_url != null
-                        && !normalized_url.isEmpty()
-                        && !urlFrontier.isVisitedURL(normalized_url)
-                ) {
-                    urlManager.handleURL(normalized_url, urlPriorityPair.getDepth() + 1);
+                if (normalized_url != null && !normalized_url.isEmpty()) {
+                    if (!urlFrontier.isVisitedURL(normalized_url)) {
+                        urlManager.handleURL(normalized_url, urlPriorityPair.getDepth() + 1);
+                    }
+                    urlFrontier.addParent(normalized_url, url);
                 }
             }
 

@@ -5,6 +5,8 @@ import com.mongodb.client.MongoCollection;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.bson.Document;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -16,8 +18,9 @@ public class URLFrontier {
     private final PriorityBlockingQueue<URLPriorityPair> urlQueue;
     //saves the parsed documents of the crawled page in addition to the title and url of that page
     private final ConcurrentLinkedQueue<Entry> documents;
-    //saves the visited or crawled urls
-    private final ConcurrentHashMap<String, Boolean> hashedURLs;
+    //saves the visited or crawled urls and its parents
+    private final ConcurrentHashMap<String, ArrayList<String>> hashedURLs;
+    private final ConcurrentHashMap<String, Boolean> crawledURLS;
     //saves the hostname and the disallowed url
     private final ConcurrentHashMap<String, String> DisallowedURLS;
     //save hashed parsed document of the page content
@@ -41,6 +44,7 @@ public class URLFrontier {
         this.visitedPagesCollection = visitedPagesCollection;
         this.visitedLinksCollection = visitedLinksCollection;
         this.disallowedUrlsCollection = disallowedUrlsCollection;
+        crawledURLS = new ConcurrentHashMap<>();
         hashedURLs = new ConcurrentHashMap<>();
         hashedPage = new ConcurrentHashMap<>();
         documents = new ConcurrentLinkedQueue<>();
@@ -65,8 +69,12 @@ public class URLFrontier {
         return documents;
     }
 
-    public ConcurrentHashMap<String, Boolean> getHashedURLs() {
+    public ConcurrentHashMap<String, ArrayList<String>> getHashedURLs() {
         return hashedURLs;
+    }
+
+    public ConcurrentHashMap<String, Boolean> getCrawledURLs() {
+        return crawledURLS;
     }
 
     public ConcurrentHashMap<String, Boolean> getHashedPage() {
@@ -102,7 +110,22 @@ public class URLFrontier {
 
     public void markURL(String url) {
         String md5Hex = getHash(url);
-        hashedURLs.put(md5Hex, true);
+        hashedURLs.put(md5Hex, new ArrayList<>());
+    }
+
+    public void markCrawled(String url){
+        String md5Hex = getHash(url);
+        crawledURLS.put(md5Hex, true);
+    }
+
+
+    public void addParent(String url , String parent){
+        //TODO check if the url is not present in the memory of the program and exist on the database
+        String md5Hex = getHash(url);
+        String parentHash = getHash(parent);
+        ArrayList<String> urls = hashedURLs.get(md5Hex);
+        urls.add(parentHash);
+        hashedURLs.put(md5Hex, urls);
     }
 
 
@@ -185,10 +208,22 @@ public class URLFrontier {
         return queue;
     }
 
-    public static void saveVisitedPages(ConcurrentHashMap<String, Boolean> hashedMap, MongoCollection<Document> collection) {
+    public static void saveCrawledPages(ConcurrentHashMap<String, Boolean> hashedMap, MongoCollection<Document> collection) {
         // Iterate over the ConcurrentHashMap and insert URL strings into the database
         for (String url : hashedMap.keySet()) {
             Document document = new Document("hash", url);
+            // Insert the document into the collection
+            collection.insertOne(document);
+        }
+    }
+
+    public static void saveVisitedPages(ConcurrentHashMap<String, ArrayList<String>>hashedMap, ConcurrentHashMap<String,Boolean>crawledUrls, MongoCollection<Document> collection) {
+        // Iterate over the ConcurrentHashMap and insert URL strings into the database
+        for (String hash : hashedMap.keySet()) {
+            ArrayList<String> parents = hashedMap.get(hash);
+            boolean isCrawled = crawledUrls.get(hash) != null;
+            // Create a document to represent the entry
+            Document document = new Document("hash", hash).append("parents", parents).append("isCrawled",isCrawled);
             // Insert the document into the collection
             collection.insertOne(document);
         }
