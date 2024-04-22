@@ -33,7 +33,7 @@ public class Crawler implements Runnable {
 
                     crawl(seed);
 
-                  if(urlFrontier.getHashedPageSize() >= 6000) return;
+                    if (urlFrontier.getHashedPageSize() >= 6000) return;
 
                 }
 
@@ -44,31 +44,37 @@ public class Crawler implements Runnable {
     }
 
     public void crawl(URLPriorityPair urlPriorityPair) throws IOException {
-
         String url = urlPriorityPair.getUrl();
 
         URLFrontier urlFrontier = urlManager.getUrlFrontier();
 
-        Document doc = parser.parse(url);
+        Document doc = parser.parse(url,urlManager,urlFrontier);
 
         if (doc != null) {
             String docText = doc.text();
-
-            urlFrontier.addDocument(docText,doc.title(),url);
 
             // Check if the url is a seed
             if (!urlFrontier.isVisitedURL(url)) urlFrontier.markURL(url);
             // Check if the page is duplicated
             if (urlFrontier.isVisitedPage(docText)) return;
+
             urlFrontier.markPage(docText);
+
+            urlFrontier.addDocument(docText, doc.title(), url);
+
+            if (urlPriorityPair.getDepth() == -1) return;
             for (Element link : doc.select("a[href]")) {
                 String new_link = link.absUrl("href");
                 if (!urlManager.validURL(new_link)) {
 //                    Crawler.Logger.log(STR."Invalid Link: \{new_link}");
                     continue;
-                };
+                }
+
                 String normalized_url = urlManager.normalizeURL(new_link);
-                if (normalized_url!=null && !normalized_url.isEmpty() && ! urlFrontier.isVisitedURL(normalized_url)) {
+                if (normalized_url != null
+                        && !normalized_url.isEmpty()
+                        && !urlFrontier.isVisitedURL(normalized_url)
+                ) {
                     urlManager.handleURL(normalized_url, urlPriorityPair.getDepth() + 1);
                 }
             }
