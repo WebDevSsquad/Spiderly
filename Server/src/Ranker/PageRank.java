@@ -68,6 +68,13 @@ public class PageRank {
                 }
                 pageRank[i].setPageRank(res * dumpingFactor + (1 - dumpingFactor) / N);
             }
+
+            //normalization
+            double norm  = 0;
+            for(int i = 0;i<N;i++) norm  += pageRank[i].getPageRank() * pageRank[i].getPageRank();
+            norm = Math.sqrt(norm);
+            for(int i = 0;i<N;i++) pageRank[i].setPageRank(pageRank[i].getPageRank()/norm);
+
             firstTime = false;
         }
     }

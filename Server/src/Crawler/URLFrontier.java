@@ -104,7 +104,7 @@ public class URLFrontier {
     }
 
     public void addDocument(String doc, String title, String url) {
-        documents.offer(new Entry(doc, title, url));
+        documents.offer(new Entry(title, doc, url));
     }
 
 

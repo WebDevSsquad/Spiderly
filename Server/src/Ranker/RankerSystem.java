@@ -37,14 +37,18 @@ public class RankerSystem {
         MongoCollection<Document> visitedLinksCollection = database.getCollection("visited_urls");
         MongoCollection<Document> documentsCollection = database.getCollection("documents");
         MongoCollection<Document> pageRankCollection = secondaryDatabase.getCollection("pageRank");
+        MongoCollection<Document> relevanceCollection = secondaryDatabase.getCollection("relevance");
         //--------------------------------------------------------------------------------------------------------------
         InitializationResult initialValues = PageRank.initializeData(visitedLinksCollection,documentsCollection);
         PageRank popularity = new PageRank(DUMPINGFACTOR, ERRORMARGIN,
                                     initialValues.getPageCount(),
                                     initialValues.getTransitionMatrix(),
                                     initialValues.getPageRank());
+        Relevance relevance = new Relevance(Relevance.loadDocuments(documentsCollection));
+        relevance.calculateTF();
+        relevance.calculateIDF();
         popularity.computePageRank();
         PageRank.savePageRank(popularity.getPageRank(), pageRankCollection);
-
+        Relevance.saveScores(relevance.getDocuments(),relevanceCollection);
     }
 }
