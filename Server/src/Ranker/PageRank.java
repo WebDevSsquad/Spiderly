@@ -34,23 +34,32 @@ public class PageRank {
     public static String getHash(String url) {
         return DigestUtils.md5Hex(url).toUpperCase();
     }
+
     public Pair[] getPageRank() {
         return pageRank;
     }
+
+
+    /**
+     * Computing the page the algorithm until certain error margin
+     */
     public void computePageRank() {
+
         Pair[] prevPageRank = new Pair[N];
         boolean firstTime = true;
-        for(int i=0;i<N;i++) prevPageRank[i] = new Pair(pageRank[i].getPageRank(),pageRank[i].getUrl());
+        for (int i = 0; i < N; i++) prevPageRank[i] = new Pair(pageRank[i].getPageRank(), pageRank[i].getUrl());
 
         while (true) {
             double maxError = -1;
-            if(!firstTime){
-                for (int i = 0; i < N; i++){
+            if (!firstTime) {
+                for (int i = 0; i < N; i++) {
                     maxError = Math.max(Math.abs(prevPageRank[i].getPageRank() - pageRank[i].getPageRank()), maxError);
                 }
                 if (maxError <= errorMargin) break;
             }
-            for(int i=0;i<N;i++) prevPageRank[i].setPageRank(pageRank[i].getPageRank());
+            for (int i = 0; i < N; i++) {
+                prevPageRank[i].setPageRank(pageRank[i].getPageRank());
+            }
 
             for (int i = 0; i < N; i++) {
                 double res = 0;
@@ -62,13 +71,16 @@ public class PageRank {
             firstTime = false;
         }
     }
-
+    /**
+     * initializing the matrices to start the page rank algorithm
+     */
     public static InitializationResult initializeData(MongoCollection<Document> collection, MongoCollection<Document> documents) {
         // Construct the query filter based on the condition
         Document queryFilter = new Document("isCrawled", true);
         HashMap<String, ArrayList<String>> hashedUrls = new HashMap<>();
         HashMap<String, Integer> crawledUrls = new HashMap<>();
 
+        //Get the urls(crawled) and its parents and assign each crawled url an index
         int N = 0;
         for (Document doc : collection.find(queryFilter)) {
             String hash = doc.getString("hash");
@@ -77,17 +89,30 @@ public class PageRank {
             crawledUrls.put(hash, N);
             N++;
         }
+        //--------------------------------------------------------------------------------------------------------------
+
+        //-----------------------------------------------Initializations------------------------------------------------
         Pair[] pageRank = new Pair[N];
         double[][] transitionMatrix = new double[N][N];
         int[] freq = new int[N];
 
-        for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) transitionMatrix[i][j]=0;
+        for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) transitionMatrix[i][j] = 0;
+        for (int i = 0; i < N; i++) pageRank[i] = new Pair((double) 1 / N, String.valueOf(i));
+        for (int i = 0; i < N; i++) freq[i] = 0;
+        //--------------------------------------------------------------------------------------------------------------
 
+        //Getting the crawled urls and set all of them to rank 1/N as start and assign with them the original url
+        //according to the index we set before
         for (Document doc : documents.find()) {
             String url = doc.getString("url");
-            pageRank[crawledUrls.get(getHash(url))] =new Pair((double) 1/N,url);
+            pageRank[crawledUrls.get(getHash(url))].setPageRank((double) 1 / N);
+            pageRank[crawledUrls.get(getHash(url))].setUrl(url);
         }
+        //--------------------------------------------------------------------------------------------------------------
 
+        //for each destination url (rows) we get the corresponding index of it and then for each parent (columns)
+        // "we are concerned with the crawled ones only" we put at the corresponding location in the matrix 1
+        //also counting the number of ones in each column
         for (String dest : hashedUrls.keySet()) {
             int i = crawledUrls.get(dest);
             ArrayList<String> parents = hashedUrls.get(dest);
@@ -99,8 +124,14 @@ public class PageRank {
                 }
             }
         }
+        //--------------------------------------------------------------------------------------------------------------
 
-        for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) transitionMatrix[i][j] /= freq[j];
+        //divide each cell with its column fre
+        // this leads to the sum of each column is equal to 1  "left stochastic matrix"
+        for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) {
+            if(freq[j] == 0) continue;
+            transitionMatrix[i][j] /= freq[j];
+        }
 
         return new InitializationResult(transitionMatrix, pageRank, N);
     }
@@ -159,7 +190,7 @@ class Pair implements Comparable<Pair> {
     }
 
     public void setPageRank(double rank) {
-        pageRank = rank;
+        this.pageRank = rank;
     }
 
     public void setUrl(String url) {

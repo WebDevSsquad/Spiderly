@@ -16,9 +16,9 @@ public class RankerSystem {
     private final String DATABASE_NAME = "Crawler";
     private final String SECONDARY_DATABASE_NAME = "Ranker";
 
-    private final double DUMPINGFACTOR = 0.85;
+    private final double DUMPINGFACTOR = 0.825;
 
-    private final double ERRORMARGIN = .001;
+    private final double ERRORMARGIN = .0001;
 
     public void main(String[] args) {
 
@@ -36,7 +36,7 @@ public class RankerSystem {
 
         MongoCollection<Document> visitedLinksCollection = database.getCollection("visited_urls");
         MongoCollection<Document> documentsCollection = database.getCollection("documents");
-        MongoCollection<Document> pageRankCollection = secondaryDatabase.getCollection("documents");
+        MongoCollection<Document> pageRankCollection = secondaryDatabase.getCollection("pageRank");
         //--------------------------------------------------------------------------------------------------------------
         InitializationResult initialValues = PageRank.initializeData(visitedLinksCollection,documentsCollection);
         PageRank popularity = new PageRank(DUMPINGFACTOR, ERRORMARGIN,
