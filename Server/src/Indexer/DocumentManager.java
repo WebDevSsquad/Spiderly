@@ -1,17 +1,20 @@
 package Indexer;
 
-import Crawler.Parser;
-import org.jsoup.nodes.Document;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import com.mongodb.client.*;
+import org.bson.Document;
 
 /**
  * The DocumentManager class manages documents for indexing.
  * It provides methods to parse documents, store their content, and manage indexes.
  */
 public class DocumentManager {
+
+    private static final String CRAWLER_DATABASE_NAME = "Crawler";
+    private static final String CONNECTION_STRING = "mongodb://localhost:27017";
 
     /**
      * The inverted index storing terms and their corresponding document occurrences.
@@ -54,7 +57,17 @@ public class DocumentManager {
     ConcurrentLinkedQueue<Document> GetParsedDocs() throws IOException {
         // Only for testing
         ConcurrentLinkedQueue<Document> parsed = new ConcurrentLinkedQueue<>();
+        MongoClient mongoClient = MongoClients.create(CONNECTION_STRING);
+        MongoDatabase database = mongoClient.getDatabase(CRAWLER_DATABASE_NAME);
+        MongoCollection<Document> documentCollection = database.getCollection("documents");
 
+        FindIterable<Document> documents = documentCollection.find();
+
+        for (Document document : documents) {
+            parsed.add(document);
+        }
+
+        mongoClient.close();
         return parsed;
     }
 }
