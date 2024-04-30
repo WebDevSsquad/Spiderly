@@ -16,7 +16,7 @@ public class RankerSystem {
     private final String DATABASE_NAME = "Crawler";
     private final String SECONDARY_DATABASE_NAME = "Ranker";
 
-    private final double DUMPINGFACTOR = 0.825;
+    private final double DAMPINGFACTOR = 0.825;
 
     private final double ERRORMARGIN = .0001;
 
@@ -40,15 +40,15 @@ public class RankerSystem {
         MongoCollection<Document> relevanceCollection = secondaryDatabase.getCollection("relevance");
         //--------------------------------------------------------------------------------------------------------------
         InitializationResult initialValues = PageRank.initializeData(visitedLinksCollection,documentsCollection);
-        PageRank popularity = new PageRank(DUMPINGFACTOR, ERRORMARGIN,
+        PageRank popularity = new PageRank(DAMPINGFACTOR, ERRORMARGIN,
                                     initialValues.getPageCount(),
                                     initialValues.getTransitionMatrix(),
                                     initialValues.getPageRank());
-        Relevance relevance = new Relevance(Relevance.loadDocuments(documentsCollection));
-        relevance.calculateTF();
-        relevance.calculateIDF();
+//        Relevance relevance = new Relevance(Relevance.loadDocuments(documentsCollection));
+//        relevance.calculateTF();
+//        relevance.calculateIDF();
         popularity.computePageRank();
         PageRank.savePageRank(popularity.getPageRank(), pageRankCollection);
-        Relevance.saveScores(relevance.getDocuments(),relevanceCollection);
+//        Relevance.saveScores(relevance.getDocuments(),relevanceCollection);
     }
 }
