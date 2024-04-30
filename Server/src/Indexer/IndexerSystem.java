@@ -73,8 +73,6 @@ public class IndexerSystem {
                     .append("term", entry.getKey())
                     .append("df", documentManager.DF.get(entry.getKey()));
 
-
-            // Convert HashMap<Integer, Integer> to Document
             Document dfTfDocument = new Document();
             for (Map.Entry<ObjectId, Integer> dfTfEntry : entry.getValue().entrySet()) {
                 dfTfDocument.append(dfTfEntry.getKey().toString(), dfTfEntry.getValue());
