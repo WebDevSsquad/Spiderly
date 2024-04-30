@@ -1,0 +1,96 @@
+.navbar {
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 5%;
+  gap: auto;
+
+  width: 100vw;
+  height: 150px;
+
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+.logo {
+  margin: 0;
+  width: 162px;
+  height: 81px;
+
+  background: url(../../assets/logo.png);
+  background-size:contain;
+
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+.org {
+
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 10px 20px;
+  gap: 10px;
+
+  margin: 0;
+  width: 280px;
+  height: 60px;
+
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+
+  opacity: 0.7;
+  cursor: pointer;
+  user-select: none;
+}
+
+.org:hover {
+  opacity: 1;
+  
+}
+
+.icon {
+
+  margin: 0;
+  margin-left: auto;
+  
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+
+}
+
+.icon > svg {
+  height: 30px;
+  aspect-ratio: 35 / 40;
+
+}
+
+.org__name {
+  margin: 0;
+  margin-right: auto;
+  width: max-content;
+  height: 27px;
+
+  font-size: var(--font-size-logo);
+  letter-spacing: 0.04em;
+  /* identical to box height */
+
+  color: var(--text-light);
+
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+}

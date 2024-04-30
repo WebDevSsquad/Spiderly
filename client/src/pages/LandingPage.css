@@ -1,0 +1,110 @@
+.body {
+  width: 100%;
+  min-height: 100vh;
+  background-color: transparent;
+}
+
+.glassmorphism {
+  width: 100%;
+  min-height: 100vh;
+  backdrop-filter: blur(2px) saturate(100%);
+  -webkit-backdrop-filter: blur(9px) saturate(100%);
+  background-color: rgba(17, 25, 40, 0.53);
+}
+
+.hero {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6.5rem 5%;
+  gap: 1.5rem;
+
+  width: 100%;
+
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  flex-grow: 1;
+
+}
+
+.hero_content {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 0px;
+  gap: 1.8rem;
+
+  width: 969px;
+  max-width: 95vw;
+
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+  flex-shrink: 1;
+
+}
+
+.hero__title {
+
+  width: 100%;
+
+  font-size: var(--font-size-hero);
+  letter-spacing: 0.07em;
+  line-height: 84px;
+  text-align: center;
+
+  color: var(--text-light);
+
+
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+  flex-shrink: 1;
+
+}
+
+.hero ::selection {
+  color: var(--text-extralight);
+  background: var(--brand-secondary-light);
+}
+
+span.gradient::selection {
+  color: var(var(--background-dark));
+  background: var(--brand-accent-light);
+}
+
+span.gradient {
+  background: linear-gradient(120deg, var(--brand-primary), var(--brand-accent-light));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero__subtitle {
+
+  font-size: 36px;
+  line-height: 44px;
+  /* identical to box height */
+  text-align: center;
+
+  color: var(--text-extralight);
+
+
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  flex-grow: 1;
+  flex-shrink: 1;
+
+}
+
+.hero__subtitle > span {
+  letter-spacing: 0.05em;
+  margin: 0 1.5rem; 
+}
