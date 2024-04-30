@@ -1,14 +1,11 @@
 package Indexer;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.*;
 import org.bson.Document;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.bson.types.ObjectId;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class IndexerSystem {
@@ -51,12 +48,13 @@ public class IndexerSystem {
 
         // Store inverted index
         MongoCollection<Document> invertedIndexCollection = database.getCollection("inverted_index");
-        for (ConcurrentHashMap.Entry<String, List<Map.Entry<Integer, Integer>>> entry : documentManager.invertedIndex.entrySet()) {
+        for (ConcurrentHashMap.Entry<WordPair, List<Map.Entry<ObjectId, Integer>>> entry : documentManager.invertedIndex.entrySet()) {
             Document invertedIndexDoc = new Document()
-                    .append("term", entry.getKey());
+                    .append("originalWord", entry.getKey().getOriginalWord())
+                    .append("stemmedWord", entry.getKey().getStemmedWord());
 
             List<Document> documents = new ArrayList<>();
-            for (Map.Entry<Integer, Integer> docEntry : entry.getValue()) {
+            for (Map.Entry<ObjectId, Integer> docEntry : entry.getValue()) {
                 if (docEntry != null) {
                     Document doc = new Document()
                             .append("docId", docEntry.getKey())
@@ -68,28 +66,21 @@ public class IndexerSystem {
             invertedIndexCollection.insertOne(invertedIndexDoc);
         }
 
-        // Store document frequency (DF)
-        MongoCollection<Document> dfCollection = database.getCollection("document_frequency");
-        for (ConcurrentHashMap.Entry<String, Integer> entry : documentManager.DF.entrySet()) {
-            Document dfDoc = new Document()
+        // Store DF-TF
+        MongoCollection<Document> dfTfCollection = database.getCollection("df_tf");
+        for (ConcurrentHashMap.Entry<String, HashMap<ObjectId, Integer>> entry : documentManager.TF.entrySet()) {
+            Document dfTfDoc = new Document()
                     .append("term", entry.getKey())
-                    .append("frequency", entry.getValue());
-            dfCollection.insertOne(dfDoc);
-        }
+                    .append("df", documentManager.DF.get(entry.getKey()));
 
-        // Store term frequency (TF)
-        MongoCollection<Document> tfCollection = database.getCollection("term_frequency");
-        for (ConcurrentHashMap.Entry<String, HashMap<Integer, Integer>> entry : documentManager.TF.entrySet()) {
-            Document tfDoc = new Document()
-                    .append("term", entry.getKey());
 
             // Convert HashMap<Integer, Integer> to Document
-            Document tfDocument = new Document();
-            for (Map.Entry<Integer, Integer> tfEntry : entry.getValue().entrySet()) {
-                tfDocument.append(tfEntry.getKey().toString(), tfEntry.getValue());
+            Document dfTfDocument = new Document();
+            for (Map.Entry<ObjectId, Integer> dfTfEntry : entry.getValue().entrySet()) {
+                dfTfDocument.append(dfTfEntry.getKey().toString(), dfTfEntry.getValue());
             }
-            tfDoc.append("documents", tfDocument);
-            tfCollection.insertOne(tfDoc);
+            dfTfDoc.append("documents", dfTfDocument);
+            dfTfCollection.insertOne(dfTfDoc);
         }
 
         long end = System.currentTimeMillis();

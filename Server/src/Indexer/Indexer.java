@@ -2,6 +2,7 @@ package Indexer;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import java.io.FileReader;
@@ -52,7 +53,8 @@ public class Indexer implements Runnable {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            Index(textArray, stopWords);
+            ObjectId id = doc.getObjectId("_id");
+            Index(textArray, stopWords, id);
         }
     }
 
@@ -62,18 +64,19 @@ public class Indexer implements Runnable {
      * @param textArray the array of text to be indexed
      * @param stopWords the set of stop words to be excluded from indexing
      */
-    void Index(ArrayList<String> textArray, HashSet<String> stopWords) {
+    void Index(ArrayList<String> textArray, HashSet<String> stopWords, ObjectId index) {
         HashSet<String> visited = new HashSet<>();
         for (int j = 0; j < textArray.size(); j++) {
             if (stopWords.contains(textArray.get(j)) || textArray.get(j).isEmpty()) continue;
             String word = stemmer.Stem(textArray.get(j));
-            documentManager.invertedIndex.computeIfAbsent(word, _ -> new ArrayList<>())
-                    .add(new HashMap.SimpleEntry<>(documentManager.docs.size(), j));
+            WordPair pair = new WordPair(textArray.get(j), word);
+            documentManager.invertedIndex.computeIfAbsent(pair, _ -> new ArrayList<>())
+                    .add(new HashMap.SimpleEntry<>(index, j));
             if (!visited.contains(word)) {
                 visited.add(word);
                 documentManager.DF.put(word, documentManager.DF.getOrDefault(word, 0) + 1);
             }
-            documentManager.TF.computeIfAbsent(word, _ -> new HashMap<>()).merge(documentManager.docs.size(), 1, Integer::sum);
+            documentManager.TF.computeIfAbsent(word, _ -> new HashMap<>()).merge(index, 1, Integer::sum);
         }
     }
 
