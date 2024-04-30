@@ -1,0 +1,9 @@
+#particles {
+  position: absolute;
+  z-index: -1;
+}
+
+::selection {
+  color: var(--brand-secondary);
+  background: var(--brand-accent-light);
+}
