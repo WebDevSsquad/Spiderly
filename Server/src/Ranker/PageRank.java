@@ -17,14 +17,14 @@ public class PageRank {
     // 1 : n*1 matrix with all ones
     // d : dumping factor to avoid problems like "Dangling nodes" and "Disconnected components"
 
-    private final double dampingFactor;
+    private final double dumpingFactor;
     private final double[][] transitionMatrix;
     private final Pair[] pageRank;
     private final int N;
     private final double errorMargin;
 
     public PageRank(double dumpingFactor, double errorMargin, int N, double[][] transitionMatrix, Pair[] pageRank) {
-        this.dampingFactor = dumpingFactor;
+        this.dumpingFactor = dumpingFactor;
         this.transitionMatrix = transitionMatrix;
         this.pageRank = pageRank;
         this.N = N;
@@ -66,7 +66,7 @@ public class PageRank {
                 for (int j = 0; j < N; j++) {
                     res += prevPageRank[j].getPageRank() * transitionMatrix[i][j];
                 }
-                pageRank[i].setPageRank(res * dampingFactor + (1 - dampingFactor) / N);
+                pageRank[i].setPageRank(res * dumpingFactor + (1 - dumpingFactor) / N);
             }
 
             //normalization
