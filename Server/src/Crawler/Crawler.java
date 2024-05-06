@@ -24,13 +24,11 @@ public class Crawler implements Runnable {
         while (true) {
             try {
                 int queueSize = urlFrontier.getUrlQueueSize();
-
                 while (queueSize-- != 0) {
                     URLPriorityPair seed = urlFrontier.getNextURL();
 
                     if (seed == null) break;
                     if (seed.getDepth() >= THRESHOLD) return;
-
                     crawl(seed);
 
                     if (urlFrontier.getHashedPageSize() >= 6000) return;

@@ -1,16 +1,49 @@
 package Indexer;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import com.mongodb.client.*;
 import org.bson.Document;
-
+import org.bson.types.ObjectId;
 /**
  * The DocumentManager class manages documents for indexing.
  * It provides methods to parse documents, store their content, and manage indexes.
  */
+class WordPair {
+    private final String originalWord;
+    private final String stemmedWord;
+
+    public WordPair(String originalWord, String stemmedWord) {
+        this.originalWord = originalWord;
+        this.stemmedWord = stemmedWord;
+    }
+
+    // Add getters for original and stemmed words
+    public String getOriginalWord() {
+        return originalWord;
+    }
+
+    public String getStemmedWord() {
+        return stemmedWord;
+    }
+
+    // Override equals and hashCode for proper usage in HashMap
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        WordPair wordPair = (WordPair) obj;
+        return Objects.equals(originalWord, wordPair.originalWord) &&
+                Objects.equals(stemmedWord, wordPair.stemmedWord);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(originalWord, stemmedWord);
+    }
+}
+
 public class DocumentManager {
 
     private static final String CRAWLER_DATABASE_NAME = "Crawler";
@@ -19,7 +52,7 @@ public class DocumentManager {
     /**
      * The inverted index storing terms and their corresponding document occurrences.
      */
-    ConcurrentHashMap<String, List<Map.Entry<Integer, Integer>>> invertedIndex = new ConcurrentHashMap<>();
+    ConcurrentHashMap<WordPair, List<Map.Entry<ObjectId, Integer>>> invertedIndex = new ConcurrentHashMap<>();
 
     /**
      * The document frequency (DF) map storing the number of documents each term appears in.
@@ -29,7 +62,7 @@ public class DocumentManager {
     /**
      * The term frequency (TF) map storing the frequency of each term in each document.
      */
-    ConcurrentHashMap<String, HashMap<Integer, Integer>> TF = new ConcurrentHashMap<>();
+    ConcurrentHashMap<String, HashMap<ObjectId, Integer>> TF = new ConcurrentHashMap<>();
 
     /**
      * The queue containing documents to be indexed.

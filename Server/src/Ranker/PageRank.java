@@ -17,14 +17,14 @@ public class PageRank {
     // 1 : n*1 matrix with all ones
     // d : dumping factor to avoid problems like "Dangling nodes" and "Disconnected components"
 
-    private final double dumpingFactor;
+    private final double dampingFactor;
     private final double[][] transitionMatrix;
     private final Pair[] pageRank;
     private final int N;
     private final double errorMargin;
 
     public PageRank(double dumpingFactor, double errorMargin, int N, double[][] transitionMatrix, Pair[] pageRank) {
-        this.dumpingFactor = dumpingFactor;
+        this.dampingFactor = dumpingFactor;
         this.transitionMatrix = transitionMatrix;
         this.pageRank = pageRank;
         this.N = N;
@@ -66,7 +66,7 @@ public class PageRank {
                 for (int j = 0; j < N; j++) {
                     res += prevPageRank[j].getPageRank() * transitionMatrix[i][j];
                 }
-                pageRank[i].setPageRank(res * dumpingFactor + (1 - dumpingFactor) / N);
+                pageRank[i].setPageRank(res * dampingFactor + (1 - dampingFactor) / N);
             }
 
             //normalization
@@ -147,7 +147,7 @@ public class PageRank {
         //sort desc to map the pageRank to values between 1 - N
         Arrays.sort(pageRank);
         for (int i = 0; i < pageRank.length; i++) {
-            Document document = new Document("pageRank", i + 1).append("url", pageRank[i].getUrl());
+            Document document = new Document("pageRank", pageRank[i].getPageRank()).append("url", pageRank[i].getUrl());
             collection.insertOne(document);
         }
     }

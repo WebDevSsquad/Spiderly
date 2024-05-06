@@ -53,7 +53,7 @@ public class URLFrontier {
 
     //----------------------------------------Getters-------------------------------------------------------------------
 
-    public URLPriorityPair getNextURL() {
+    public synchronized URLPriorityPair getNextURL() {
         return urlQueue.poll();
     }
 
