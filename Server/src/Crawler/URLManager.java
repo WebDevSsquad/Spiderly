@@ -9,13 +9,21 @@ import org.bson.Document;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.lang.StringTemplate.STR;
 
+/**
+ * URLManager class manages the URLs to be crawled, checks their validity, and handles their states.
+ */
 public class URLManager {
+
+    // Logging
+    private static final Logger logger = Logger.getLogger(URLManager.class.getName());
     private final URLFrontier urlFrontier;
 
     private final MongoCollection<Document> seedCollection;
@@ -25,100 +33,125 @@ public class URLManager {
     private final MongoCollection<Document> disallowedUrlsCollection;
     private final MongoCollection<Document> documentsCollection;
 
+    /**
+     * Constructs a URLManager with the necessary MongoDB collections.
+     *
+     * @param seedCollection           The collection for storing seed URLs.
+     * @param visitedPagesCollection   The collection for storing visited pages.
+     * @param visitedLinksCollection   The collection for storing visited links.
+     * @param documentsCollection      The collection for storing parsed documents.
+     * @param disallowedUrlsCollection The collection for storing disallowed URLs.
+     */
     public URLManager(MongoCollection<Document> seedCollection, MongoCollection<Document> visitedPagesCollection,
                       MongoCollection<Document> visitedLinksCollection,
                       MongoCollection<Document> documentsCollection,
                       MongoCollection<Document> disallowedUrlsCollection) {
+
+        PriorityBlockingQueue<URLPriorityPair> urlQueue = DBManager.loadQueueFromFile(seedCollection);
+        urlFrontier = new URLFrontier(urlQueue, visitedPagesCollection, visitedLinksCollection, disallowedUrlsCollection);
+
         this.documentsCollection = documentsCollection;
-        urlFrontier = new URLFrontier(URLFrontier.loadQueueFromFile(seedCollection), visitedPagesCollection, visitedLinksCollection, disallowedUrlsCollection);
         this.seedCollection = seedCollection;
         this.visitedPagesCollection = visitedPagesCollection;
         this.visitedLinksCollection = visitedLinksCollection;
         this.disallowedUrlsCollection = disallowedUrlsCollection;
     }
 
-    public static void Main(String[] args) {
+    /**
+     * Checks if a URL is valid and adds it to the URLFrontier if it's new.
+     *
+     * @param url      The URL to check and add.
+     * @param parent   The parent URL of the child URL.
+     * @param priority The priority of the URL.
+     * @param depth    The depth of the URL.
+     * @return True if the URL was added successfully, otherwise false.
+     */
+    public boolean handleChildUrl(String url, String parent, int priority, int depth) {
+        if (!validURL(url)) {
+            logger.log(Level.WARNING, STR."Invalid Link: \{url}");
+            return false;
+        }
 
+        // Get the normalized URL without queries or fragments
+        String normalized_url = normalizeURL(url);
+
+        if (normalized_url != null && !normalized_url.isEmpty()) {
+            // Check if the child url is new
+            if (!urlFrontier.isVisitedURL(normalized_url)) {
+                addNewURL(normalized_url, priority, depth);
+            }
+
+            // Add parent url to the child url
+            urlFrontier.addParent(normalized_url, parent);
+            return true;
+        }
+        return false;
     }
 
-    public void addToFrontier(String url, int priority, int depth) {
-        if (urlFrontier.addURL(url, priority, depth))
-            urlFrontier.markURL(url);
+    /**
+     * Checks if a URL is a seed, mark it. And its document for duplicates.
+     *
+     * @param url     The URL to check.
+     * @param docText The text content of the document.
+     * @return True if the URL is new and the document is not a duplicate, otherwise false.
+     */
+    public boolean checkURL(String url, String docText) {
+        // Check if the url is a seed
+        if (!urlFrontier.isVisitedURL(url)) urlFrontier.markURL(url);
+
+        // Check if the page is duplicated
+        return !urlFrontier.isVisitedPage(docText);
     }
 
-    public void manageFrontier() {
-        while (!urlFrontier.isEmpty()) {
-            URLPriorityPair seed = urlFrontier.getNextURL();
-            // Perform tasks to manage the URL frontier
-            // List<String> urls = handleURL();
-            // Dummy links for testing
-            // urls.add("www.wikipedia.org");
-            // urls.add("www.facebook.com");
-            // This could include tasks such as prioritization, filtering, or concurrency control
-            // Example tasks:
+    /**
+     * Marks a URL and its document as visited and crawled.
+     *
+     * @param url   The URL to mark.
+     * @param docText   The content of the document.
+     * @param title The title of the document.
+     */
+    public void visitURL(String url, String docText, String title) {
+        urlFrontier.markPage(docText);
 
-            // 1. URL Normalization
-            // In Crawler.Parser
+        urlFrontier.addDocument(docText, title, url);
 
-            // 2. URL Filtering
-            // In Crawler.Parser
-            // 3. URL Prioritization
-            // urls = prioritizeURLs(urls);
+        urlFrontier.markCrawled(url);
+    }
 
-            // 4. Concurrency Control (Optional)
-            // Implement concurrency control mechanisms if needed
-            // for (String url : urls) {
-            //     addToFrontier(url, 0);
-            // }
+    /**
+     * Adds a new URL to the URLFrontier.
+     *
+     * @param url      The URL to add.
+     * @param priority The priority of the URL.
+     * @param depth    The depth of the URL.
+     */
+    public void addNewURL(String url, int priority, int depth) {
+        try {
+            URI uri = new URI(url);
+            urlFrontier.addURL(uri, priority, depth);
+        } catch (URISyntaxException e) {
+            logger.log(Level.SEVERE, STR."Error creating URI: \{url}", e);
         }
     }
 
-    public void handleURL(String url, int depth) {
-        int priority = prioritizeURL(url);
-        addToFrontier(url, priority, depth);
-    }
-
+    /**
+     * Checks if a URL is valid.
+     *
+     * @param url The URL to check.
+     * @return True if the URL is valid, otherwise false.
+     */
     public boolean validURL(String url) {
         // Implement logic to shorten URLs if needed
         UrlValidator urlValidator = new UrlValidator();
         return urlValidator.isValid(url);
     }
 
-
     /**
-     * Extracts the host domain from a given URL string.
+     * Normalizes a URL for consistency and comparability.
      *
-     * @param urlString The URL string from which to extract the host domain.
-     * @return The host domain extracted from the URL string, or an empty string if extraction fails.
+     * @param url The URL to normalize.
+     * @return The normalized URL.
      */
-    public String extractHost(String urlString) {
-        try {
-            URL url = new URL(urlString);
-            String host = url.getHost();
-            //System.out.println("Host domain: " + host);
-            return host;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
-    /**
-     * Extracts the path part of the URL after the host domain.
-     *
-     * @param urlString The URL from which to extract the path.
-     * @return The path part of the URL after the host domain.
-     */
-    public String extractPath(String urlString) {
-        try {
-            URI uri = new URI(urlString);
-            return uri.getPath();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            return null; // Return null if unable to extract URL path
-        }
-    }
-
     public String normalizeURL(String url) {
         // Implement logic to normalize URLs for consistency and comparability
         // This can include removing trailing slashes, converting to lowercase, etc.
@@ -127,27 +160,36 @@ public class URLManager {
 
         try {
             URI uri = new URI(url);
+
             // 1. Remove the part after '#' (the fragment part)
             if (uri.getFragment() != null) {
                 // Remake with same parts, less the fragment:
                 uri = new URI(uri.getScheme(), uri.getSchemeSpecificPart(), null);
             }
 
+            // 2. RFC 3986 Normalization
             URI normalizedURI = uri.normalize();
-            String normalizedURL = normalizedURI.toString();
-            // Return the normalized url
-            normalizedURL = apacheNormalization(normalizedURL);
 
-//            if (!url.equals(normalizedURL)) Crawler.Logger.log(url + " --normalized--> " + normalizedURL);
+            // 3. Remove queries
+            String normalizedURL = STR."\{normalizedURI.getScheme()}://\{normalizedURI.getAuthority()}\{normalizedURI.getPath()}";;
+
+            // 4. Apache normalization
+            normalizedURL = apacheNormalization(normalizedURL);
 
             return normalizedURL.toLowerCase();
         } catch (URISyntaxException e) {
-            Logger.logError(STR."Invalid URL: \{url}", e);
+            logger.log(Level.SEVERE, STR."Invalid URL while normalization: \{url}", e);
             return null;
         }
     }
 
-    public String apacheNormalization(String urlString) {
+    /**
+     * Applies Apache normalization to a URL.
+     *
+     * @param urlString The URL to normalize.
+     * @return The normalized URL.
+     */
+    private String apacheNormalization(String urlString) {
         try {
             // Decode percent-encoded characters
             String decodedURL = URLDecoder.decode(urlString, StandardCharsets.UTF_8);
@@ -160,35 +202,21 @@ public class URLManager {
         }
     }
 
+    /**
+     * Retrieves the URLFrontier object associated with this URLManager.
+     *
+     * @return The URLFrontier object.
+     */
+    public URLFrontier getUrlFrontier() {return urlFrontier;}
 
-    private int prioritizeURL(String url) {
-        // Implement URL prioritization logic
-        // For example, prioritize URLs based on domain importance, freshness, or relevance
-        return 0;
-    }
-
-    // Dummy methods for basic structure
-    private double getImportanceScore(String url) {
-        // Example: Calculate importance score based on domain reputation or user ratings
-        return 0.85; // Dummy importance score (range: 0 to 1)
-    }
-
-    // Dummy methods for basic structure
-    private double getVisitsCount(String url) {
-        // Retrieve number of visits for the URL from analytics data
-        // Dummy implementation, replace with actual data retrieval logic
-        return 1000; // Example: 1000 visits
-    }
-
-    public URLFrontier getUrlFrontier() {
-        return urlFrontier;
-    }
-
+    /**
+     * Saves the state of the URLManager to the database.
+     */
     public void saveState() {
-        URLFrontier.saveQueue(urlFrontier.getQueue(), seedCollection);
-        URLFrontier.saveCrawledPages(urlFrontier.getHashedPage(), visitedPagesCollection);
-        URLFrontier.saveVisitedPages(urlFrontier.getHashedURLs(), urlFrontier.getCrawledURLs(), visitedLinksCollection);
-        URLFrontier.saveDocuments(urlFrontier.getDocuments(), documentsCollection);
-        URLFrontier.saveUrlDisallowedPaths(urlFrontier.getDisallowedURLS(), disallowedUrlsCollection);
+        DBManager.saveQueue(urlFrontier.getQueue(), seedCollection);
+        DBManager.saveCrawledPages(urlFrontier.getHashedPage(), visitedPagesCollection);
+        DBManager.saveVisitedPages(urlFrontier.getHashedURLs(), urlFrontier.getCrawledURLs(), visitedLinksCollection);
+        DBManager.saveDocuments(urlFrontier.getDocuments(), documentsCollection);
+        DBManager.saveUrlDisallowedPaths(urlFrontier.getDisallowedURLS(), disallowedUrlsCollection);
     }
 }

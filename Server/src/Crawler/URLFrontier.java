@@ -1,41 +1,62 @@
 package Crawler;
 
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.bson.Document;
 
+import java.net.URI;
+
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
+/**
+ * URLFrontier manages the queue of URLs to be crawled, keeps track of crawled URLs.
+ */
 public class URLFrontier {
 
-    //queue that holds the future seed of the crawler.this queue loads at the beginning of the program from the database to get the previous state
+    // Queue that holds the future seed of the crawler.
+    // This queue loads at the beginning of the program from the database to get the previous state
     private final PriorityBlockingQueue<URLPriorityPair> urlQueue;
-    //saves the parsed documents of the crawled page in addition to the title and url of that page
+
+    // Queue for parsed documents of crawled pages
     private final ConcurrentLinkedQueue<Entry> documents;
-    //saves the visited or crawled urls and its parents
+
+    // Map to store visited or crawled URLs and their parent URLs
     private final ConcurrentHashMap<String, ArrayList<String>> hashedURLs;
+
+    // Map to store crawled URLs
     private final ConcurrentHashMap<String, Boolean> crawledURLS;
-    //saves the hostname and the disallowed url
+
+    // Map to store disallowed URLs and their hosts
     private final ConcurrentHashMap<String, String> DisallowedURLS;
-    //save hashed parsed document of the page content
+
+    // Map to store hashed parsed document of page content
     private final ConcurrentHashMap<String, Boolean> hashedPage;
 
     // MongoDB Collections
 
-    //Collection for crawled pages , contains the parsed doc hashed to overcome the problem of pages which have the same url
+    // Collection for crawled pages, contains the parsed doc hashed to overcome
+    // the problem of pages which have the same URL
     private final MongoCollection<Document> visitedPagesCollection;
-    //Collection for links that is crawled or in queue to prevent putting duplicates in queue and visiting the same url twice
+
+    // Collection for links that are crawled or in queue to prevent putting
+    // duplicates in the queue and visiting the same URL twice
     private final MongoCollection<Document> visitedLinksCollection;
-    //Collection to save the disallowed urls from a certain host this prevent downloading the robots.txt file twice and visiting a disallowed url
+
+    // Collection to save the disallowed URLs from a certain host to prevent
+    // downloading the robots.txt file twice and visiting a disallowed URL
     private final MongoCollection<Document> disallowedUrlsCollection;
 
-
+    /**
+     * Constructs a URLFrontier object.
+     *
+     * @param urlQueue                  Priority Queue for URLs to be crawled
+     * @param visitedPagesCollection    Collection for crawled pages
+     * @param visitedLinksCollection    Collection for links that are crawled or in queue
+     * @param disallowedUrlsCollection  Collection for disallowed URLs
+     */
     public URLFrontier(PriorityBlockingQueue<URLPriorityPair> urlQueue,
                        MongoCollection<Document> visitedPagesCollection,
                        MongoCollection<Document> visitedLinksCollection,
@@ -51,7 +72,7 @@ public class URLFrontier {
         DisallowedURLS = new ConcurrentHashMap<>();
     }
 
-    //----------------------------------------Getters-------------------------------------------------------------------
+    //--------------------------------------------------- GETTERS ----------------------------------------------------//
 
     public synchronized URLPriorityPair getNextURL() {
         return urlQueue.poll();
@@ -93,59 +114,131 @@ public class URLFrontier {
         return urlQueue.size();
     }
 
+    //----------------------------------------------------------------------------------------------------------------//
 
-    //------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------- ADDERS ----------------------------------------------------//
 
-    //-------------------------------------------Adders-----------------------------------------------------------------
-    public boolean addURL(String url, int priority, int depth) {
+    /**
+     * Adds a URL to the URL queue.
+     *
+     * @param url      The URL to add
+     * @param priority The priority of the URL
+     * @param depth    The depth of the URL in the crawl hierarchy
+     */
+    public void addURL(URI url, int priority, int depth) {
         URLPriorityPair newURL = new URLPriorityPair(url, priority, depth);
         urlQueue.offer(newURL);
-        return true;
+        markURL(newURL.url().toString());
     }
 
+    /**
+     * Adds a document to the queue of parsed documents.
+     *
+     * @param doc   The document content
+     * @param title The title of the document
+     * @param url   The URL of the document
+     */
     public void addDocument(String doc, String title, String url) {
         documents.offer(new Entry(title, doc, url));
     }
 
-
+    /**
+     * Marks a URL as visited.
+     *
+     * @param url The URL to mark
+     */
     public void markURL(String url) {
         String md5Hex = getHash(url);
         hashedURLs.put(md5Hex, new ArrayList<>());
     }
 
+    /**
+     * Marks a URL as crawled.
+     *
+     * @param url The URL to mark as crawled
+     */
     public void markCrawled(String url){
         String md5Hex = getHash(url);
         crawledURLS.put(md5Hex, true);
     }
 
 
+    /**
+     * Adds a parent URL for a given URL.
+     *
+     * @param url    The URL to add a parent to
+     * @param parent The parent URL
+     */
     public void addParent(String url , String parent){
-        //TODO check if the url is not present in the memory of the program and exist on the database
+        // Get hashes of both urls
         String md5Hex = getHash(url);
         String parentHash = getHash(parent);
-        ArrayList<String> urls = hashedURLs.get(md5Hex);
-        urls.add(parentHash);
-        hashedURLs.put(md5Hex, urls);
+
+        // Check if the URL exists in the database
+        Document criteria = new Document("hash", md5Hex);
+        Document foundDoc = visitedLinksCollection.find(criteria).first();
+        if (foundDoc != null) {    // Exists in the database not the present memory.
+            // Get the existing parent list
+            ArrayList<String> urls = foundDoc.get("parents", ArrayList.class);
+            if (urls == null) {
+                urls = new ArrayList<>();
+            }
+
+            // Add the new parent
+            urls.add(parentHash);
+
+            // Update the document in the database with the new parent list
+            criteria.put("parents", urls);
+            visitedLinksCollection.updateOne(new Document("_id", foundDoc.getObjectId("_id")), new Document("$set", criteria));
+        } else {
+            // Get the existing parent list
+            ArrayList<String> urls = hashedURLs.get(md5Hex);
+            urls.add(parentHash);
+            hashedURLs.put(md5Hex, urls);
+        }
     }
 
 
+    /**
+     * Marks a page as visited, storing its hash in the hashedPage map.
+     *
+     * @param url The URL of the page to mark as visited.
+     */
     public void markPage(String url) {
         String md5Hex = getHash(url);
         hashedPage.put(md5Hex, true);
     }
 
+    /**
+     * Disallows a URL from being crawled by adding it to the DisallowedURLS map.
+     *
+     * @param url  The URL to disallow.
+     * @param host The host associated with the disallowed URL.
+     */
     public void disallowUrl(String url, String host) {
         String md5Hex = getHash(url);
         DisallowedURLS.put(md5Hex, getHash(host));
     }
 
-    //------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------//
 
-    //-------------------------------------------Booleans---------------------------------------------------------------
+    //--------------------------------------------------- BOOLEANS ---------------------------------------------------//
+
+    /**
+     * Checks if the URL queue is empty.
+     *
+     * @return True if the URL queue is empty, otherwise false.
+     */
     public boolean isEmpty() {
         return urlQueue.isEmpty();
     }
 
+    /**
+     * Checks if a URL has been visited.
+     *
+     * @param url The URL to check.
+     * @return True if the URL has been visited, otherwise false.
+     */
     public boolean isVisitedURL(String url) {
         String md5Hex = getHash(url);
         Document criteria = new Document("hash", md5Hex);
@@ -153,6 +246,12 @@ public class URLFrontier {
         return hashedURLs.containsKey(md5Hex) || count != 0;
     }
 
+    /**
+     * Checks if a page has been visited.
+     *
+     * @param doc The document to check.
+     * @return True if the page has been visited, otherwise false.
+     */
     public boolean isVisitedPage(String doc) {
         String md5Hex = getHash(doc);
         Document criteria = new Document("hash", md5Hex);
@@ -160,6 +259,12 @@ public class URLFrontier {
         return hashedPage.containsKey(md5Hex) || count != 0;
     }
 
+    /**
+     * Checks if a URL is allowed to be crawled.
+     *
+     * @param url The URL to check.
+     * @return True if the URL is allowed, otherwise false.
+     */
     public boolean isAllowedUrl(String url) {
         String md5Hex = getHash(url);
         Document criteria = new Document("disallowed", md5Hex);
@@ -167,6 +272,12 @@ public class URLFrontier {
         return DisallowedURLS.containsKey(md5Hex) || count != 0;
     }
 
+    /**
+     * Checks if a host has been processed.
+     *
+     * @param host The host to check.
+     * @return True if the host has been processed, otherwise false.
+     */
     public boolean isHostProcessed(String host) {
         String md5Hex = getHash(host);
         Document criteria = new Document("host", md5Hex);
@@ -174,139 +285,6 @@ public class URLFrontier {
         return DisallowedURLS.containsValue(md5Hex) || count != 0;
     }
 
-
-    //------------------------------------------------------------------------------------------------------------------
-
-    //-------------------------------------------State Handlers---------------------------------------------------------
-
-    public static void saveQueue(PriorityBlockingQueue<URLPriorityPair> originalQueue, MongoCollection<Document> seedCollection) {
-        for (URLPriorityPair pair : originalQueue) {
-            // Create a document representing the URLPriorityPair object
-            Document document = new Document("url", pair.getUrl())
-                    .append("priority", pair.getPriority())
-                    .append("depth", pair.getDepth());
-            // Insert the document into the collection
-            seedCollection.insertOne(document);
-        }
-    }
-
-    public static PriorityBlockingQueue<URLPriorityPair> loadQueueFromFile(MongoCollection<Document> seedCollection) {
-        PriorityBlockingQueue<URLPriorityPair> queue = new PriorityBlockingQueue<>();
-        // Query documents from the collection
-        FindIterable<Document> results = seedCollection.find();
-
-        // Iterate over the query results
-        for (Document doc : results) {
-            String url = doc.getString("url");
-            int depth = doc.getInteger("depth");
-            int priority = doc.getInteger("priority");
-            URLPriorityPair pair = new URLPriorityPair(url, priority, depth);
-            queue.offer(pair);
-        }
-        // Delete the documents from the collection
-        seedCollection.deleteMany(new Document());
-        return queue;
-    }
-
-    public static void saveCrawledPages(ConcurrentHashMap<String, Boolean> hashedMap, MongoCollection<Document> collection) {
-        // Iterate over the ConcurrentHashMap and insert URL strings into the database
-        for (String url : hashedMap.keySet()) {
-            Document document = new Document("hash", url);
-            // Insert the document into the collection
-            collection.insertOne(document);
-        }
-    }
-
-    public static void saveVisitedPages(ConcurrentHashMap<String, ArrayList<String>>hashedMap, ConcurrentHashMap<String,Boolean>crawledUrls, MongoCollection<Document> collection) {
-        // Iterate over the ConcurrentHashMap and insert URL strings into the database
-        for (String hash : hashedMap.keySet()) {
-            ArrayList<String> parents = hashedMap.get(hash);
-            boolean isCrawled = crawledUrls.get(hash) != null;
-            // Create a document to represent the entry
-            Document document = new Document("hash", hash).append("parents", parents).append("isCrawled",isCrawled);
-            // Insert the document into the collection
-            collection.insertOne(document);
-        }
-    }
-
-    public static void saveDocuments(ConcurrentLinkedQueue<Entry> documents, MongoCollection<Document> collection) {
-        while (!documents.isEmpty()) {
-
-            Entry entry = documents.poll();
-            Document add = new Document("title", entry.getTitle())
-                    .append("url", entry.getLink())
-                    .append("document", entry.getContent());
-            collection.insertOne(add);
-        }
-    }
-
-    public static void saveUrlDisallowedPaths(ConcurrentHashMap<String, String> hashedMap, MongoCollection<Document> collection) {
-        for (Map.Entry<String, String> entry : hashedMap.entrySet()) {
-            String disallowed = entry.getKey();
-            String host = entry.getValue();
-            Document document = new Document("disallowed", disallowed).append("host", host);
-            collection.insertOne(document);
-        }
-    }
-
-    //------------------------------------------------------------------------------------------------------------------
-
+    //----------------------------------------------------------------------------------------------------------------//
 }
 
-class URLPriorityPair implements Comparable {
-    private final String url;
-    private final int priority;
-    private final int depth;
-
-    public String getUrl() {
-        return url;
-    }
-
-    public int getPriority() {
-        return priority;
-    }
-
-    public int getDepth() {
-        return depth;
-    }
-
-    public URLPriorityPair(String url, int priority, int depth) {
-        this.url = url;
-        this.priority = priority;
-        this.depth = depth;
-    }
-
-    @Override
-    public int compareTo(Object other) {
-        // Compare by depth first
-        if (this.depth != ((URLPriorityPair) other).depth) {
-            return Integer.compare(this.depth, ((URLPriorityPair) other).depth);
-        }
-        return Integer.compare(this.priority, ((URLPriorityPair) other).priority);
-    }
-}
-
-class Entry {
-    private final String title;
-    private final String content;
-    private final String link;
-
-    public Entry(String title, String content, String link) {
-        this.title = title;
-        this.content = content;
-        this.link = link;
-    }
-
-    // Getters and setters
-    public String getTitle() {
-        return title;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public String getLink() {
-        return link;
-    }
-}

@@ -4,28 +4,33 @@ import com.panforge.robotstxt.*;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.io.IOException;
 import java.net.URL;
 
 public class Parser {
+
+    // Logging
+    private static final Logger logger = Logger.getLogger(Parser.class.getName());
+
     /**
-     * Checks if the given URL is allowed based on the robots.txt rules.
+     * Checks if a URL is allowed to be crawled based on the website's robots.txt file.
      *
-     * @param url The URL to check.
-     * @return true if the URL is allowed, false otherwise.
+     * @param url          The URL to check.
+     * @param hostDomain   The domain of the website.
+     * @param urlFrontier  The URLFrontier object to store disallowed URLs.
+     * @return True if the URL is allowed, otherwise false.
      */
     public boolean isUrlAllowed(String url, String hostDomain , URLFrontier urlFrontier) {
         // Create a URL object for the website's robots.txt file
         URL robotsTxtUrl;
+        String robotsTxtStr = getRobotsTxtURL(hostDomain);;
         try {
-            String robotsTxtStr = getRobotsTxtURL(hostDomain);
             robotsTxtUrl = new URL(robotsTxtStr);
         } catch (IOException e) {
-            System.err.println(STR."Error creating URL: \{e.getMessage()}");
+            logger.log(Level.FINE, STR."Error creating robotsTxt URL: \{robotsTxtStr}", e);
             return true;
         }
 
@@ -42,21 +47,29 @@ public class Parser {
             // Check if a specific user-agent is allowed to access a URL
             return robotsTxt.query("*", url);
         } catch (IOException e) {
-            System.err.println(STR."Error reading robots.txt: \{e.getMessage()}");
+            logger.log(Level.FINE, STR."Error reading robotsTxt URL: \{robotsTxtStr}", e);
             return true;
         }
     }
 
-    public Document parse(String url,URLManager urlManager,URLFrontier urlFrontier) {
+    /**
+     * Parses a web page and retrieves its content.
+     *
+     * @param urlPair      The URLPriorityPair object representing the URL to parse.
+     * @param urlFrontier  The URLFrontier object for managing URL states.
+     * @return The parsed document if successful, otherwise null.
+     */
+    public Document parse(URLPriorityPair urlPair, URLFrontier urlFrontier) {
+        String url = urlPair.url().toString();
         try {
-            Connection connect = Jsoup.connect(url);
+            Connection connect = Jsoup.connect(urlPair.url().toString());
             Document doc = connect.get();
             int code = connect.response().statusCode();
             if (code >= 200 && code < 300) {
                 System.out.println(doc.title());
                 System.out.println(STR."Link: \{url}");
 
-                String urlHost = urlManager.extractHost(url);
+                String urlHost = urlPair.getHost();
                 if (urlFrontier.isHostProcessed(urlHost)) {
                     if (urlFrontier.isAllowedUrl(url))
                         return doc;
@@ -67,6 +80,7 @@ public class Parser {
                 return null;
             }
         } catch (IOException e) {
+            logger.log(Level.WARNING, STR."Error parsing url URL: \{url}", e);
             return null;
         }
         return null;
@@ -82,35 +96,4 @@ public class Parser {
         return STR."http://\{hostDomain}/robots.txt";
     }
 
-//    public static void main(String[] args) {
-//        // Create a URL object for the website's robots.txt file
-//        URL robotsTxtUrl;
-//        try {
-//            robotsTxtUrl = new URL("https://wikipedia.com/robots.txt");
-//        } catch (IOException e) {
-//            System.err.println("Error creating URL: " + e.getMessage());
-//            return;
-//        }
-//
-//        // Parse the robots.txt file
-//        try {
-//            RobotsTxt robotsTxt = RobotsTxt.read(robotsTxtUrl.openStream());
-//            List<String> disallowedList = robotsTxt.getDisallowList("*");
-//
-//            // Print the list of disallowed URLs
-//            System.out.println("Disallowed URLs:");
-//            for (String url : disallowedList) {
-//                System.out.println(url);
-//            }
-//            // Check if a specific user-agent is allowed to access a URL
-//            boolean isAllowed = robotsTxt.query("*", "https://wikipedia.com/wiki/Wikipedia:Redirects_for_discussion");
-//            if (isAllowed) {
-//                System.out.println("URL is allowed for crawling");
-//            } else {
-//                System.out.println("URL is not allowed for crawling");
-//            }
-//        } catch (IOException e) {
-//            System.err.println("Error reading robots.txt: " + e.getMessage());
-//        }
-//    }
 }

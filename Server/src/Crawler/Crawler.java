@@ -4,14 +4,28 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+/**
+ * Crawler class represents a web crawler that crawls web pages and extracts information.
+ */
 public class Crawler implements Runnable {
+
+    // Logging
+    private static final Logger logger = Logger.getLogger(Crawler.class.getName());
     private final URLManager urlManager;
 
     private final Parser parser;
 
     private final int THRESHOLD;
 
+    /**
+     * Initializes a new Crawler object with the specified URLManager and maximum depth.
+     *
+     * @param urlManager The URLManager to handle URLs and frontier.
+     * @param maxDepth   The maximum depth for crawling.
+     */
     public Crawler(URLManager urlManager, int maxDepth) {
         this.urlManager = urlManager;
         parser = new Parser();
@@ -28,7 +42,7 @@ public class Crawler implements Runnable {
                     URLPriorityPair seed = urlFrontier.getNextURL();
 
                     if (seed == null) break;
-                    if (seed.getDepth() >= THRESHOLD) return;
+                    if (seed.depth() >= THRESHOLD) return;
                     crawl(seed);
 
                     if (urlFrontier.getHashedPageSize() >= 6000) return;
@@ -41,41 +55,33 @@ public class Crawler implements Runnable {
         }
     }
 
+    /**
+     * Crawls a URL and extracts information from the web page.
+     *
+     * @param urlPriorityPair The URLPriorityPair object representing the URL to crawl.
+     * @throws IOException If an I/O error occurs.
+     */
     public void crawl(URLPriorityPair urlPriorityPair) throws IOException {
-        String url = urlPriorityPair.getUrl();
+        String url = urlPriorityPair.url().toString();
 
         URLFrontier urlFrontier = urlManager.getUrlFrontier();
 
-        Document doc = parser.parse(url, urlManager, urlFrontier);
+        Document doc = parser.parse(urlPriorityPair, urlFrontier);
 
         if (doc != null) {
             String docText = doc.text();
+            String title = doc.title();
+            // Check if the url was crawled or the document is a duplicate
+            if (!urlManager.checkURL(url, docText)) return;
 
-            // Check if the url is a seed
-            if (!urlFrontier.isVisitedURL(url)) urlFrontier.markURL(url);
-            // Check if the page is duplicated
-            if (urlFrontier.isVisitedPage(docText)) return;
+            // Set the url and document as crawled
+            urlManager.visitURL(url, docText, title);
 
-            urlFrontier.markPage(docText);
-
-            urlFrontier.addDocument(docText, doc.title(), url);
-
-            urlFrontier.markCrawled(url);
-
-            if (urlPriorityPair.getDepth() == -1) return;
+            // Loop on children links in the document
             for (Element link : doc.select("a[href]")) {
                 String new_link = link.absUrl("href");
-                if (!urlManager.validURL(new_link)) {
-//                    Crawler.Logger.log(STR."Invalid Link: \{new_link}");
-                    continue;
-                }
-
-                String normalized_url = urlManager.normalizeURL(new_link);
-                if (normalized_url != null && !normalized_url.isEmpty()) {
-                    if (!urlFrontier.isVisitedURL(normalized_url)) {
-                        urlManager.handleURL(normalized_url, urlPriorityPair.getDepth() + 1);
-                    }
-                    urlFrontier.addParent(normalized_url, url);
+                if (!urlManager.handleChildUrl(new_link, url, 0, urlPriorityPair.depth() + 1)) {
+                    logger.log(Level.WARNING, STR."Failed adding URL to frontier:\{new_link}");
                 }
             }
 
