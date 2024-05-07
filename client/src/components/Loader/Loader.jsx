@@ -25,27 +25,27 @@ const Loader = () => {
             >
               <stop
                 className="s-xJBuHA073rTt"
-                stop-color="#f25a02"
+                stopColor="#f25a02"
                 offset="0"
               ></stop>
               <stop
                 className="s-xJBuHA073rTt"
-                stop-color="#f65b1e"
+                stopColor="#f65b1e"
                 offset="0.25"
               ></stop>
               <stop
                 className="s-xJBuHA073rTt"
-                stop-color="#fa5d2f"
+                stopColor="#fa5d2f"
                 offset="0.5"
               ></stop>
               <stop
                 className="s-xJBuHA073rTt"
-                stop-color="#fd603d"
+                stopColor="#fd603d"
                 offset="0.75"
               ></stop>
               <stop
                 className="s-xJBuHA073rTt"
-                stop-color="#ff634a"
+                stopColor="#ff634a"
                 offset="1"
               ></stop>
             </linearGradient>
@@ -56,36 +56,36 @@ const Loader = () => {
               x2="0"
               y1="62"
               x1="0"
-              id="b"
+              id="bb"
             >
               <stop
                 className="s-xJBuHA073rTt"
-                stop-color="rgba(242,90,2,1)"
+                stopColor="rgba(242,90,2,1)"
                 offset="1"
               ></stop>
               <stop
                 className="s-xJBuHA073rTt"
-                stop-color="rgba(255,98,76,0.45)"
+                stopColor="rgba(255,98,76,0.45)"
                 offset="1"
               ></stop>
             </linearGradient>
             <linearGradient
-              class="s-xJBuHA073rTt"
+              className="s-xJBuHA073rTt"
               gradientUnits="userSpaceOnUse"
               y2="0"
               x2="0"
               y1="64"
               x1="0"
-              id="d"
+              id="b"
             >
-              <stop class="s-xJBuHA073rTt" stop-color="#FFC800"></stop>
-              <stop class="s-xJBuHA073rTt" stop-color="#F0F" offset="1"></stop>
+              <stop offset="0" stopColor="#D46435" stopOpacity="1" />
+              <stop offset="1" stopColor="rgb(231, 82, 13)" stopOpacity="1" />
 
               <animateTransform
                 repeatCount="indefinite"
                 keySplines=".42,0,.58,1;.42,0,.58,1;.42,0,.58,1;.42,0,.58,1;.42,0,.58,1;.42,0,.58,1;.42,0,.58,1;.42,0,.58,1"
                 keyTimes="0; 0.125; 0.25; 0.375; 0.5; 0.625; 0.75; 0.875; 1"
-                dur="8s"
+                dur="25s"
                 values="0 32 32;-270 32 32;-270 32 32;-540 32 32;-540 32 32;-810 32 32;-810 32 32;-1080 32 32;-1080 32 32"
                 type="rotate"
                 attributeName="gradientTransform"
