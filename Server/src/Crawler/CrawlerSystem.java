@@ -7,7 +7,7 @@ import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 
 public class CrawlerSystem {
-    private final int THRESHOLD = 3;
+    private final int THRESHOLD = 2;
     private final String connectionString = "mongodb://localhost:27017";
     private final String DATABASE_NAME = "Crawler";
 
