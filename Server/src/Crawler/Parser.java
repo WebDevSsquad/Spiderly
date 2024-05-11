@@ -26,16 +26,11 @@ public class Parser {
     public boolean isUrlAllowed(String url, String hostDomain , URLFrontier urlFrontier) {
         // Create a URL object for the website's robots.txt file
         URL robotsTxtUrl;
-        String robotsTxtStr = getRobotsTxtURL(hostDomain);;
+        String robotsTxtStr = getRobotsTxtURL(hostDomain);
+        // Parse the robots.txt file
+
         try {
             robotsTxtUrl = new URL(robotsTxtStr);
-        } catch (IOException e) {
-            logger.log(Level.FINE, STR."Error creating robotsTxt URL: \{robotsTxtStr}", e);
-            return true;
-        }
-
-        // Parse the robots.txt file
-        try {
             RobotsTxt robotsTxt = RobotsTxt.read(robotsTxtUrl.openStream());
 
             List<String> disallowedList = robotsTxt.getDisallowList("*");
@@ -48,7 +43,7 @@ public class Parser {
             return robotsTxt.query("*", url);
         } catch (IOException e) {
             logger.log(Level.FINE, STR."Error reading robotsTxt URL: \{robotsTxtStr}", e);
-            return true;
+            return false;
         }
     }
 
@@ -66,13 +61,15 @@ public class Parser {
             Document doc = connect.get();
             int code = connect.response().statusCode();
             if (code >= 200 && code < 300) {
-                System.out.println(doc.title());
-                System.out.println(STR."Link: \{url}");
+//                System.out.println(doc.title());
+//                System.out.println(STR."Link: \{url}");
 
                 String urlHost = urlPair.getHost();
+               // System.out.println(urlHost);
                 if (urlFrontier.isHostProcessed(urlHost)) {
-                    if (urlFrontier.isAllowedUrl(url))
+                    if (urlFrontier.isAllowedUrl(url)) {
                         return doc;
+                    }
                 } else if (isUrlAllowed(url, urlHost, urlFrontier)) {
                     return doc;
                 }
@@ -80,7 +77,7 @@ public class Parser {
                 return null;
             }
         } catch (IOException e) {
-            logger.log(Level.WARNING, STR."Error parsing url URL: \{url}", e);
+           // logger.log(Level.WARNING, STR."Error parsing url URL: \{url}", e);
             return null;
         }
         return null;
@@ -93,7 +90,9 @@ public class Parser {
      * @return The url that leads to the robots.txt file, or an empty string if reading fails or the file does not exist.
      */
     private String getRobotsTxtURL(String hostDomain) {
-        return STR."http://\{hostDomain}/robots.txt";
+        return STR."\{hostDomain}/robots.txt";
     }
+
+
 
 }

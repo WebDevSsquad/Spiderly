@@ -7,6 +7,7 @@ import org.bson.Document;
 import java.net.URI;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -52,10 +53,10 @@ public class URLFrontier {
     /**
      * Constructs a URLFrontier object.
      *
-     * @param urlQueue                  Priority Queue for URLs to be crawled
-     * @param visitedPagesCollection    Collection for crawled pages
-     * @param visitedLinksCollection    Collection for links that are crawled or in queue
-     * @param disallowedUrlsCollection  Collection for disallowed URLs
+     * @param urlQueue                 Priority Queue for URLs to be crawled
+     * @param visitedPagesCollection   Collection for crawled pages
+     * @param visitedLinksCollection   Collection for links that are crawled or in queue
+     * @param disallowedUrlsCollection Collection for disallowed URLs
      */
     public URLFrontier(PriorityBlockingQueue<URLPriorityPair> urlQueue,
                        MongoCollection<Document> visitedPagesCollection,
@@ -157,7 +158,7 @@ public class URLFrontier {
      *
      * @param url The URL to mark as crawled
      */
-    public void markCrawled(String url){
+    public void markCrawled(String url) {
         String md5Hex = getHash(url);
         crawledURLS.put(md5Hex, true);
     }
@@ -169,7 +170,7 @@ public class URLFrontier {
      * @param url    The URL to add a parent to
      * @param parent The parent URL
      */
-    public void addParent(String url , String parent){
+    public void addParent(String url, String parent) {
         // Get hashes of both urls
         String md5Hex = getHash(url);
         String parentHash = getHash(parent);
@@ -177,6 +178,7 @@ public class URLFrontier {
         // Check if the URL exists in the database
         Document criteria = new Document("hash", md5Hex);
         Document foundDoc = visitedLinksCollection.find(criteria).first();
+
         if (foundDoc != null) {    // Exists in the database not the present memory.
             // Get the existing parent list
             ArrayList<String> urls = foundDoc.get("parents", ArrayList.class);
@@ -192,7 +194,11 @@ public class URLFrontier {
             visitedLinksCollection.updateOne(new Document("_id", foundDoc.getObjectId("_id")), new Document("$set", criteria));
         } else {
             // Get the existing parent list
-            ArrayList<String> urls = hashedURLs.get(md5Hex);
+            ArrayList<String> urls;
+            if (hashedURLs.containsKey(md5Hex))
+                urls = hashedURLs.get(md5Hex);
+            else
+                urls = new ArrayList<>();
             urls.add(parentHash);
             hashedURLs.put(md5Hex, urls);
         }

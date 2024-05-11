@@ -68,7 +68,7 @@ public class URLManager {
      */
     public boolean handleChildUrl(String url, String parent, int priority, int depth) {
         if (!validURL(url)) {
-            logger.log(Level.WARNING, STR."Invalid Link: \{url}");
+            //logger.log(Level.INFO, STR."Invalid Link: \{url}");
             return false;
         }
 
@@ -130,7 +130,7 @@ public class URLManager {
             URI uri = new URI(url);
             urlFrontier.addURL(uri, priority, depth);
         } catch (URISyntaxException e) {
-            logger.log(Level.SEVERE, STR."Error creating URI: \{url}", e);
+            //logger.log(Level.SEVERE, STR."Error creating URI when adding to url frontier: \{url}", e);
         }
     }
 
@@ -174,11 +174,11 @@ public class URLManager {
             String normalizedURL = STR."\{normalizedURI.getScheme()}://\{normalizedURI.getAuthority()}\{normalizedURI.getPath()}";;
 
             // 4. Apache normalization
-            normalizedURL = apacheNormalization(normalizedURL);
+           // normalizedURL = apacheNormalization(normalizedURL);
 
             return normalizedURL.toLowerCase();
         } catch (URISyntaxException e) {
-            logger.log(Level.SEVERE, STR."Invalid URL while normalization: \{url}", e);
+           // logger.log(Level.SEVERE, STR."Invalid URL while normalization: \{url}", e);
             return null;
         }
     }
