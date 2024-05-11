@@ -275,7 +275,7 @@ public class URLFrontier {
         String md5Hex = getHash(url);
         Document criteria = new Document("disallowed", md5Hex);
         long count = disallowedUrlsCollection.countDocuments(criteria);
-        return DisallowedURLS.containsKey(md5Hex) || count != 0;
+        return !DisallowedURLS.containsKey(md5Hex) && count == 0;
     }
 
     /**

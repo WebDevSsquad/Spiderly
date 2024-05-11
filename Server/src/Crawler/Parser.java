@@ -61,11 +61,11 @@ public class Parser {
             Document doc = connect.get();
             int code = connect.response().statusCode();
             if (code >= 200 && code < 300) {
-//                System.out.println(doc.title());
-//                System.out.println(STR."Link: \{url}");
+                System.out.println(doc.title());
+                System.out.println(STR."Link: \{url}");
 
                 String urlHost = urlPair.getHost();
-               // System.out.println(urlHost);
+
                 if (urlFrontier.isHostProcessed(urlHost)) {
                     if (urlFrontier.isAllowedUrl(url)) {
                         return doc;
@@ -73,7 +73,6 @@ public class Parser {
                 } else if (isUrlAllowed(url, urlHost, urlFrontier)) {
                     return doc;
                 }
-
                 return null;
             }
         } catch (IOException e) {
