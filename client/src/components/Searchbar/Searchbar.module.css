@@ -1,5 +1,5 @@
 .searchbar {
-
+  overflow: hidden;
   
   display: flex;
   justify-content: flex-start;
@@ -13,9 +13,6 @@
   height: 30px;
   aspect-ratio: 1 / 1;
   cursor: pointer;
-}
-
-.searchbar_icon:hover {
 }
 
 .searchbar_icon:hover path {
