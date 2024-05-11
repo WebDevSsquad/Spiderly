@@ -1,0 +1,57 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 2rem;
+  color: var(--text-extralight);
+}
+
+.info {
+  display: flex;
+  flex-direction: row;
+
+  justify-content: flex-start;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 0.8rem;
+}
+
+.logo {
+  display: flex;
+  flex-direction: row;
+  gap: 0.8rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 50px;
+  background-color: var(--brand-secondary-light);
+  align-items: center;
+  justify-content: center;
+}
+
+.logo__text {
+  line-height: 21px;
+  height: 21px;
+}
+
+.logo__icon {
+  height: 21px;
+  aspect-ratio: 1 / 1;
+}
+
+.link {
+  letter-spacing: 0.03em;
+  font-size: var(--font-size-small);
+}
+
+.link {
+  letter-spacing: 0.03em;
+  font-size: var(--font-size-small);
+}
+
+.title {
+  color: var(--brand-primary-light);
+  font-size: var(--font-size-subtitle);
+  margin-bottom: 0.4rem;
+}
+
+.title:hover {
+  color: var(--brand-accent);
+}
