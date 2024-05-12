@@ -30,3 +30,4 @@ bin/
 
 ### Test Files ###
 src/main/resources/*.txt
+backend/node_modules

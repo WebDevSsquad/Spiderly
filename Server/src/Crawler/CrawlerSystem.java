@@ -6,6 +6,8 @@ import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 
+import static java.lang.StringTemplate.STR;
+
 public class CrawlerSystem {
     private final int THRESHOLD = 2;
     private final String connectionString = "mongodb://localhost:27017";
