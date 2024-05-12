@@ -5,8 +5,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import Crawler.URLManager;
 import com.mongodb.client.*;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -25,7 +23,7 @@ public class DocumentManager {
     /**
      * The inverted index storing terms and their corresponding document occurrences.
      */
-    public ConcurrentHashMap<WordPair, List<Map.Entry<ObjectId, Integer>>> invertedIndex;
+    public ConcurrentHashMap<String, ConcurrentHashMap<ObjectId, List<Integer>>> invertedIndex;
 
     /**
      * The document frequency (DF) map storing the number of documents each term appears in.
