@@ -33,7 +33,7 @@ public class DocumentManager {
     /**
      * The term frequency (TF) map storing the frequency of each term in each document.
      */
-    public ConcurrentHashMap<String, HashMap<ObjectId, Integer>> TF;
+    public final ConcurrentHashMap<String, HashMap<ObjectId, Integer>> TF;
 
     /**
      * The queue containing documents to be indexed.
