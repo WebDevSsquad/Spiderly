@@ -76,7 +76,7 @@ public class Parser {
                 return null;
             }
         } catch (IOException e) {
-           // logger.log(Level.WARNING, STR."Error parsing url URL: \{url}", e);
+            logger.log(Level.WARNING, STR."Error parsing url URL: \{url}", e);
             return null;
         }
         return null;
