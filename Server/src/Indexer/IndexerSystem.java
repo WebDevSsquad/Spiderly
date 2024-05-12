@@ -1,12 +1,6 @@
 package Indexer;
 import com.mongodb.client.*;
 import org.bson.Document;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.bson.types.ObjectId;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,12 +46,9 @@ public class IndexerSystem {
         MongoDatabase database = mongoClient.getDatabase(INDEXER_DATABASE_NAME);
 
         // Store inverted index
-        MongoCollection<Document> invertedIndexCollection = database.getCollection("inverted_index");
-        DBManager.saveInvertedIndex(documentManager.invertedIndex.entrySet(), invertedIndexCollection);
+        MongoCollection<Document> invertedIndexCollection = database.getCollection("indexer_collection");
+        DBManager.saveInvertedIndex(documentManager.invertedIndex, documentManager.DF, documentManager.TF, invertedIndexCollection);
 
-        // Store DF-TF
-        MongoCollection<Document> dfTfCollection = database.getCollection("df_tf");
-        DBManager.saveDfAndTf(documentManager.DF, documentManager.TF, dfTfCollection);
 
         long end = System.currentTimeMillis();
         System.out.println((end - start) / 1000);
