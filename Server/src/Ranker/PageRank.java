@@ -19,11 +19,11 @@ public class PageRank {
 
     private final double dampingFactor;
     private final double[][] transitionMatrix;
-    private final Pair[] pageRank;
+    private final URLRankPair[] pageRank;
     private final int N;
     private final double errorMargin;
 
-    public PageRank(double dumpingFactor, double errorMargin, int N, double[][] transitionMatrix, Pair[] pageRank) {
+    public PageRank(double dumpingFactor, double errorMargin, int N, double[][] transitionMatrix, URLRankPair[] pageRank) {
         this.dampingFactor = dumpingFactor;
         this.transitionMatrix = transitionMatrix;
         this.pageRank = pageRank;
@@ -35,7 +35,7 @@ public class PageRank {
         return DigestUtils.md5Hex(url).toUpperCase();
     }
 
-    public Pair[] getPageRank() {
+    public URLRankPair[] getPageRank() {
         return pageRank;
     }
 
@@ -45,9 +45,9 @@ public class PageRank {
      */
     public void computePageRank() {
 
-        Pair[] prevPageRank = new Pair[N];
+        URLRankPair[] prevPageRank = new URLRankPair[N];
         boolean firstTime = true;
-        for (int i = 0; i < N; i++) prevPageRank[i] = new Pair(pageRank[i].getPageRank(), pageRank[i].getUrl());
+        for (int i = 0; i < N; i++) prevPageRank[i] = new URLRankPair(pageRank[i].getPageRank(), pageRank[i].getUrl());
 
         while (true) {
             double maxError = -1;
@@ -99,12 +99,12 @@ public class PageRank {
         //--------------------------------------------------------------------------------------------------------------
 
         //-----------------------------------------------Initializations------------------------------------------------
-        Pair[] pageRank = new Pair[N];
+        URLRankPair[] pageRank = new URLRankPair[N];
         double[][] transitionMatrix = new double[N][N];
         int[] freq = new int[N];
 
         for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) transitionMatrix[i][j] = 0;
-        for (int i = 0; i < N; i++) pageRank[i] = new Pair((double) 1 / N, String.valueOf(i));
+        for (int i = 0; i < N; i++) pageRank[i] = new URLRankPair((double) 1 / N, String.valueOf(i));
         for (int i = 0; i < N; i++) freq[i] = 0;
         //--------------------------------------------------------------------------------------------------------------
 
@@ -143,7 +143,7 @@ public class PageRank {
         return new InitializationResult(transitionMatrix, pageRank, N);
     }
 
-    public static void savePageRank(Pair[] pageRank, MongoCollection<Document> collection) {
+    public static void savePageRank(URLRankPair[] pageRank, MongoCollection<Document> collection) {
         //sort desc to map the pageRank to values between 1 - N
         Arrays.sort(pageRank);
         for (int i = 0; i < pageRank.length; i++) {
@@ -154,36 +154,13 @@ public class PageRank {
 
 }
 
-class InitializationResult {
-    private final double[][] transitionMatrix;
-    private final Pair[] pageRank;
+record InitializationResult(double[][] transitionMatrix, URLRankPair[] pageRank, int pageCount) { }
 
-    private final int N;
-
-    public InitializationResult(double[][] transitionMatrix, Pair[] pageRank, int N) {
-        this.transitionMatrix = transitionMatrix;
-        this.pageRank = pageRank;
-        this.N = N;
-    }
-
-    public Pair[] getPageRank() {
-        return pageRank;
-    }
-
-    public double[][] getTransitionMatrix() {
-        return transitionMatrix;
-    }
-
-    public int getPageCount() {
-        return N;
-    }
-}
-
-class Pair implements Comparable<Pair> {
+class URLRankPair implements Comparable<URLRankPair> {
     private double pageRank;
     private String url;
 
-    public Pair(double pageRank, String url) {
+    public URLRankPair(double pageRank, String url) {
         this.pageRank = pageRank;
         this.url = url;
     }
@@ -206,7 +183,7 @@ class Pair implements Comparable<Pair> {
 
 
     @Override
-    public int compareTo(Pair other) {
+    public int compareTo(URLRankPair other) {
         return Double.compare(other.pageRank, this.pageRank);
     }
 }

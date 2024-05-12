@@ -45,7 +45,7 @@ public class Crawler implements Runnable {
                     if (seed.depth() >= THRESHOLD) return;
                     crawl(seed);
 
-                    if (urlFrontier.getHashedPageSize() >= 6000) return;
+                    if (urlFrontier.getHashedPageSize() >= CrawlerSystem.DOCUMENTS_THRESHOLD) return;
 
                 }
 
@@ -69,7 +69,7 @@ public class Crawler implements Runnable {
         Document doc = parser.parse(urlPriorityPair, urlFrontier);
 
         if (doc != null) {
-            String docText = doc.text();
+            String docText = doc.html();
             String title = doc.title();
             // Check if the url was crawled or the document is a duplicate
             if (!urlManager.checkURL(url, docText)) return;

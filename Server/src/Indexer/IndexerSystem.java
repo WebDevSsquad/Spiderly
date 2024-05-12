@@ -12,9 +12,12 @@ public class IndexerSystem {
     private static final String CONNECTION_STRING = "mongodb://localhost:27017";
 
     public static void main(String[] args) {
+        runIndexerSystem(Integer.parseInt(args[0]));
+    }
+
+    public static void runIndexerSystem(int threadCount) {
         DocumentManager documentManager = new DocumentManager();
 
-        int threadCount = Integer.parseInt(args[0]);
         Thread[] threads = new Thread[threadCount];
 
         for (int i = 0; i < threadCount; i++) {

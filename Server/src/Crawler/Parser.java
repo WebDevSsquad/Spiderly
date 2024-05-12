@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.io.IOException;
 import java.net.URL;
+import java.util.regex.PatternSyntaxException;
 
 public class Parser {
 
@@ -41,7 +42,7 @@ public class Parser {
 
             // Check if a specific user-agent is allowed to access a URL
             return robotsTxt.query("*", url);
-        } catch (IOException e) {
+        } catch (IOException | PatternSyntaxException e) {
             logger.log(Level.FINE, STR."Error reading robotsTxt URL: \{robotsTxtStr}", e);
             return false;
         }

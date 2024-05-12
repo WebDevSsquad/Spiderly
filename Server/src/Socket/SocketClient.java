@@ -32,8 +32,9 @@ public class SocketClient {
                         public void call(Object... args) {
                             System.out.println(args[0]);
                             //here do the ranking process and send the data
-//                            Gson gson = new Gson();
-//                    String messageJson = gson.toJson(messageArray);
+                            Gson gson = new Gson();
+                            String messageJson = gson.toJson(args);
+
                             socket.emit("response",args[0].toString().toUpperCase());
                         }
                     });

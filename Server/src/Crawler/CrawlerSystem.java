@@ -1,5 +1,6 @@
 package Crawler;
 
+import Indexer.IndexerSystem;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
@@ -9,13 +10,16 @@ import com.mongodb.client.MongoCollection;
 import static java.lang.StringTemplate.STR;
 
 public class CrawlerSystem {
-    private final int THRESHOLD = 2;
+    private final int THRESHOLD = 4;
+    public static final int DOCUMENTS_THRESHOLD = 10000;
     private final String connectionString = "mongodb://localhost:27017";
     private final String DATABASE_NAME = "Crawler";
 
     private long start;
 
     private long end;
+
+    private boolean saved = false;
 
     public void main(String[] args) {
         int threadCount = Integer.parseInt(args[0]);
@@ -53,8 +57,10 @@ public class CrawlerSystem {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             synchronized (urlManager) {
                 try {
-                    urlManager.saveState();
-                    System.out.println("State Saved Successfully");
+                    if (!saved) {
+                        urlManager.saveState();
+                        System.out.println("State Saved Successfully");
+                    }
                 } catch (Exception e) {
                     System.err.println(STR."Error while saving state: \{e.getMessage()}");
                 }
@@ -90,5 +96,8 @@ public class CrawlerSystem {
         end = System.currentTimeMillis();
         System.out.println((end - start) / 1000);
         System.out.println("All threads have finished execution.");
+        urlManager.saveState();
+        saved = true;
+        IndexerSystem.runIndexerSystem(threadCount);
     }
 }
