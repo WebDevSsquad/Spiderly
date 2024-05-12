@@ -3,71 +3,44 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import Crawler.URLManager;
 import com.mongodb.client.*;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+
 /**
  * The DocumentManager class manages documents for indexing.
  * It provides methods to parse documents, store their content, and manage indexes.
  */
-class WordPair {
-    private final String originalWord;
-    private final String stemmedWord;
-
-    public WordPair(String originalWord, String stemmedWord) {
-        this.originalWord = originalWord;
-        this.stemmedWord = stemmedWord;
-    }
-
-    // Add getters for original and stemmed words
-    public String getOriginalWord() {
-        return originalWord;
-    }
-
-    public String getStemmedWord() {
-        return stemmedWord;
-    }
-
-    // Override equals and hashCode for proper usage in HashMap
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        WordPair wordPair = (WordPair) obj;
-        return Objects.equals(originalWord, wordPair.originalWord) &&
-                Objects.equals(stemmedWord, wordPair.stemmedWord);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(originalWord, stemmedWord);
-    }
-}
-
 public class DocumentManager {
 
+    // Logging
+    private static final Logger logger = Logger.getLogger(DocumentManager.class.getName());
     private static final String CRAWLER_DATABASE_NAME = "Crawler";
     private static final String CONNECTION_STRING = "mongodb://localhost:27017";
 
     /**
      * The inverted index storing terms and their corresponding document occurrences.
      */
-    ConcurrentHashMap<WordPair, List<Map.Entry<ObjectId, Integer>>> invertedIndex = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<WordPair, List<Map.Entry<ObjectId, Integer>>> invertedIndex;
 
     /**
      * The document frequency (DF) map storing the number of documents each term appears in.
      */
-    ConcurrentHashMap<String, Integer> DF = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<String, Integer> DF;
 
     /**
      * The term frequency (TF) map storing the frequency of each term in each document.
      */
-    ConcurrentHashMap<String, HashMap<ObjectId, Integer>> TF = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<String, HashMap<ObjectId, Integer>> TF;
 
     /**
      * The queue containing documents to be indexed.
      */
-    ConcurrentLinkedQueue<Document> docs;
+    public ConcurrentLinkedQueue<Document> docs;
 
 
     /**
@@ -77,8 +50,12 @@ public class DocumentManager {
         try {
             docs = GetParsedDocs();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Parsing Docs failed ", e);
         }
+
+        invertedIndex = new ConcurrentHashMap<>();
+        DF = new ConcurrentHashMap<>();
+        TF = new ConcurrentHashMap<>();
     }
 
     /**

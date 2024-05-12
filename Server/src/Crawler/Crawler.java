@@ -81,7 +81,7 @@ public class Crawler implements Runnable {
             for (Element link : doc.select("a[href]")) {
                 String new_link = link.absUrl("href");
                 if (!urlManager.handleChildUrl(new_link, url, 0, urlPriorityPair.depth() + 1)) {
-                  //  logger.log(Level.INFO, STR."Failed adding URL to frontier:\{new_link}");
+                  logger.log(Level.INFO, STR."Failed adding URL to frontier:\{new_link}");
                 }
             }
 
