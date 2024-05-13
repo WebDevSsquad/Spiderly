@@ -6,6 +6,9 @@ import org.bson.types.ObjectId;
 import org.json.simple.parser.JSONParser;
 import java.util.HashMap;
 import org.json.simple.parser.ParseException;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
@@ -48,7 +51,7 @@ public class Indexer implements Runnable {
             Document doc = documentManager.docs.poll();
             if (doc == null) break;
 
-            ArrayList<String> textArray = GetDocumentText(doc);
+            ArrayList<Pair<String, Integer>> textArray = GetDocumentText(doc);
 
             HashSet<String> stopWords = new HashSet<>();
             try {
@@ -57,6 +60,7 @@ public class Indexer implements Runnable {
                 e.printStackTrace();
             }
             ObjectId id = doc.getObjectId("_id");
+
             Index(textArray, stopWords, id);
         }
     }
@@ -67,27 +71,32 @@ public class Indexer implements Runnable {
      * @param textArray the array of text to be indexed
      * @param stopWords the set of stop words to be excluded from indexing
      */
-    void Index(ArrayList<String> textArray, HashSet<String> stopWords, ObjectId index) {
+    void Index(ArrayList<Pair<String, Integer>> textArray, HashSet<String> stopWords, ObjectId index) {
+
         HashSet<String> visited = new HashSet<>();
 
         for (int j = 0; j < textArray.size(); j++) {
-            if (stopWords.contains(textArray.get(j)) || textArray.get(j).isEmpty()) continue;
-            String word = stemmer.Stem(textArray.get(j));
+            if (stopWords.contains(textArray.get(j).getFirst()) || textArray.get(j).getFirst().isEmpty()) continue;
+            String word = stemmer.Stem(textArray.get(j).getFirst());
+            Integer tagIndex = textArray.get(j).getSecond();
+
+            String[] tag = {"header", "title", "text"};
 
             documentManager.invertedIndex.computeIfAbsent(word, _ -> new ConcurrentHashMap<>())
-                    .computeIfAbsent(index, _ -> new ArrayList<>())
-                    .add(j);
+                .computeIfAbsent(index, _ -> new ArrayList<>())
+                .add(new Pair<>(tag[tagIndex], j));
 
             if (!visited.contains(word)) {
                 visited.add(word);
                 documentManager.DF.put(word, documentManager.DF.getOrDefault(word, 0) + 1);
             }
             synchronized (documentManager.TF) {
-                documentManager.TF.computeIfAbsent(word, _ -> new HashMap<>()).merge(index, 1, Integer::sum);
+                documentManager.TF.computeIfAbsent(word, _-> new HashMap<>())
+                        .computeIfAbsent(index, _ -> new HashMap<>())
+                        .merge(tag[tagIndex], 1, Integer::sum);
             }
         }
     }
-
 
 
     /**
@@ -109,12 +118,37 @@ public class Indexer implements Runnable {
      * @param doc the document from which to extract text
      * @return the ArrayList containing the text tokens
      */
-    ArrayList<String> GetDocumentText(Document doc) {
-        ArrayList<String> textArray = new ArrayList<>();
-        String text = doc.getString("document");
-        String[] words = text.split("\\W+");
-        for (String word : words)
-            textArray.add(word.toLowerCase());
-        return textArray;
+    ArrayList<Pair<String, Integer>> GetDocumentText(Document doc) {
+        String html = doc.getString("document");
+        org.jsoup.nodes.Document parsedDoc = Jsoup.parse(html);
+
+        ArrayList<Pair<String, Integer>> wordsPair = new ArrayList<>();
+
+
+        String[] headers = {"h1", "h2", "h3", "h4", "h5", "h6"};
+
+        for(String header : headers) {
+            Elements hTags = parsedDoc.select(header);
+            addWordsToList(hTags, wordsPair, 0);
+        }
+
+        Elements titleTags = parsedDoc.select("title");
+        addWordsToList(titleTags, wordsPair, 1);
+
+        Elements bodyTags = parsedDoc.body().getAllElements();
+
+        addWordsToList(bodyTags, wordsPair, 2);
+
+        return wordsPair;
+    }
+
+    void addWordsToList(Elements elements, ArrayList<Pair<String, Integer>> wordsPair, Integer rank) {
+        for (Element element : elements) {
+            String text = element.text();
+            String[] words = text.split("\\s+");
+            for (String word : words) {
+                wordsPair.add(new Pair<>(word, rank));
+            }
+        }
     }
 }
