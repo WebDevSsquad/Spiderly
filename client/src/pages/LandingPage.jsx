@@ -30,7 +30,7 @@ const LandingPage = () => {
     <div className="body">
       <Header />
       <div className="hero">{!startSearch ? heroContent : <Loader />}</div>
-      <Search handleSearch={handleSearch} />
+      <Search handleSearch={handleSearch}  />
     </div>
   );
 };

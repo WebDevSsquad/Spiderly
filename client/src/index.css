@@ -33,6 +33,7 @@ code {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 
   /* Primary Colors */
   --brand-primary: #F25A02;
