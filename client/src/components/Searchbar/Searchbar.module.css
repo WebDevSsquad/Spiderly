@@ -124,17 +124,11 @@ input[type="text"].searchbar_input::placeholder {
   flex-direction: column;
   background-color: rgb(38 40 46);
   width: 40rem;
-  height: 17rem;
+  height: 16rem;
   padding: 2rem;
   z-index: 2000;
   border-radius: 15px;
-  overflow: auto;
-  overflow-x: hidden;
-}
-
-.suggestion::-webkit-scrollbar-track {
-  /* -webkit-box-shadow: inset 0 0 0px rgba(255, 140, 95, 0.747); */
-  background-color: rgba(38, 40, 46, 0);
+  overflow: hidden;
 }
 
 .suggestion_item {
