@@ -5,15 +5,25 @@ import Indexer.Stemmer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class QueryProcessing {
 
-    private static ArrayList<String> tokenization(String query) {
+    public static ArrayList<String> tokenization(String query) {
         ArrayList<String> tokens = new ArrayList<>();
-        StringTokenizer tokenizer = new StringTokenizer(query);
-        while(tokenizer.hasMoreTokens()) {
-            tokens.add(tokenizer.nextToken().toLowerCase());
+        Pattern pattern = Pattern.compile("\"([^\"]*)\"|\\S+");
+        Matcher matcher = pattern.matcher(query);
+
+        while (matcher.find()) {
+            String token = matcher.group(1); // Quoted phrase
+            if (token != null) {
+                tokens.add(token);
+            } else {
+                tokens.add(matcher.group()); // Non-quoted token
+            }
         }
+
         return tokens;
     }
 
@@ -49,4 +59,9 @@ public class QueryProcessing {
         tokens = stemmer(tokens);
         return tokens;
     }
+
+    public static boolean containsSpace(String str) {
+        return str.contains(" ");
+    }
+
 }

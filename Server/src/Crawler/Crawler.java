@@ -18,7 +18,7 @@ public class Crawler implements Runnable {
 
     private final Parser parser;
 
-    private final int THRESHOLD;
+    private final int THRESHOLD, DOCUMENTS_THRESHOLD;
 
     /**
      * Initializes a new Crawler object with the specified URLManager and maximum depth.
@@ -26,10 +26,11 @@ public class Crawler implements Runnable {
      * @param urlManager The URLManager to handle URLs and frontier.
      * @param maxDepth   The maximum depth for crawling.
      */
-    public Crawler(URLManager urlManager, int maxDepth) {
+    public Crawler(URLManager urlManager, int maxDepth, int maxDocCount) {
         this.urlManager = urlManager;
         parser = new Parser();
         THRESHOLD = maxDepth;
+        DOCUMENTS_THRESHOLD = maxDocCount;
     }
 
     @Override
@@ -45,7 +46,7 @@ public class Crawler implements Runnable {
                     if (seed.depth() >= THRESHOLD) return;
                     crawl(seed);
 
-                    if (urlFrontier.getHashedPageSize() >= CrawlerSystem.DOCUMENTS_THRESHOLD) return;
+                    if (urlFrontier.getHashedPageSize() >= DOCUMENTS_THRESHOLD) return;
 
                 }
 
@@ -81,7 +82,7 @@ public class Crawler implements Runnable {
             for (Element link : doc.select("a[href]")) {
                 String new_link = link.absUrl("href");
                 if (!urlManager.handleChildUrl(new_link, url, 0, urlPriorityPair.depth() + 1)) {
-                  logger.log(Level.INFO, STR."Failed adding URL to frontier:\{new_link}");
+                  //logger.log(Level.FINE, STR."Failed adding URL to frontier:\{new_link}");
                 }
             }
 

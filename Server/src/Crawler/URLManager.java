@@ -68,7 +68,7 @@ public class URLManager {
      */
     public boolean handleChildUrl(String url, String parent, int priority, int depth) {
         if (!validURL(url)) {
-            logger.log(Level.INFO, STR."Invalid Link: \{url}");
+            //logger.log(Level.FINE, STR."Invalid Link: \{url}");
             return false;
         }
 

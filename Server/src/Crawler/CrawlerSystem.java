@@ -10,8 +10,8 @@ import com.mongodb.client.MongoCollection;
 import static java.lang.StringTemplate.STR;
 
 public class CrawlerSystem {
-    private final int THRESHOLD = 4;
-    public static final int DOCUMENTS_THRESHOLD = 10000;
+    private final int THRESHOLD = 3;
+    public final int DOCUMENTS_THRESHOLD = 10000;
     private final String connectionString = "mongodb://localhost:27017";
     private final String DATABASE_NAME = "Crawler";
 
@@ -26,7 +26,12 @@ public class CrawlerSystem {
 
 
         System.out.println(threadCount);
+        runCrawlerSystem(threadCount);
 
+        IndexerSystem.runIndexerSystem(threadCount);
+    }
+
+    public void runCrawlerSystem(int threadCount) {
         //----------------------------------------------------Database--------------------------------------------------
 
         //initialise the database connection
@@ -49,7 +54,7 @@ public class CrawlerSystem {
         Thread[] threads = new Thread[threadCount];
 
         for (int i = 0; i < threadCount; i++) {
-            threads[i] = new Thread(new Crawler(urlManager, THRESHOLD));
+            threads[i] = new Thread(new Crawler(urlManager, THRESHOLD, DOCUMENTS_THRESHOLD));
         }
 
 
@@ -98,6 +103,5 @@ public class CrawlerSystem {
         System.out.println("All threads have finished execution.");
         urlManager.saveState();
         saved = true;
-        IndexerSystem.runIndexerSystem(threadCount);
     }
 }

@@ -2,11 +2,13 @@ package Ranker;
 
 import Crawler.Crawler;
 import Crawler.URLManager;
+import QueryProcessing.QueryProcessing;
 import com.mongodb.client.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
+import javax.print.Doc;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.logging.Level;
@@ -14,6 +16,7 @@ import java.util.logging.Logger;
 
 import static java.lang.Integer.valueOf;
 import static java.lang.Math.log;
+import static java.lang.Thread.sleep;
 
 
 public class RankerSystem {
@@ -60,7 +63,7 @@ public class RankerSystem {
 //        Relevance.saveScores(relevance.getDocuments(),relevanceCollection);
     }
 
-    public ArrayList<Map.Entry<Document, Double>> queryRanker(ArrayList<String> words) {
+    public ArrayList<Map.Entry<Document, PageScorer>> queryRanker(ArrayList<String> words) {
         // Connect to MongoDB
         MongoClient mongoClient = MongoClients.create(connectionString);
 
@@ -73,53 +76,66 @@ public class RankerSystem {
         MongoDatabase rankerDb = mongoClient.getDatabase("Ranker");
         MongoCollection<Document> pageRankCollection = rankerDb.getCollection("pageRank");
 
-        long N = documentsCollection.countDocuments();
+        PageScorer.N = documentsCollection.countDocuments();
 
-        HashMap<Document, Double> pageScores = new HashMap<Document, Double>();
+        HashMap<Document, PageScorer> pageScores = new HashMap<Document, PageScorer>();
         for (String word : words) {
-            Integer DF = 0;
-            Document relatedDocs = fetchRelatedDocs(word, dfTfCollection, DF);
-            if (relatedDocs == null) continue;
-            fetchIndexedDocs(relatedDocs, DF, documentsCollection, pageScores, N);
+            if (!QueryProcessing.containsSpace(word)) {
+                Integer DF = 0;
+                List<Document> relatedDocs = fetchRelatedDocs(word, dfTfCollection, DF);
+                if (relatedDocs == null) continue;
+                fetchIndexedDocs(relatedDocs, word, DF, documentsCollection, pageScores);
+            } else {
+                fetchPhraseIndexedDocs(word, dfTfCollection, documentsCollection, pageScores);
+            }
         }
 
-        ArrayList<Map.Entry<Document, Double>> sortedEntries = orderQueryResult(pageScores, pageRankCollection);
+        ArrayList<Map.Entry<Document, PageScorer>> sortedEntries = orderQueryResult(pageScores, pageRankCollection);
 
         return sortedEntries;
     }
 
-    private Document fetchRelatedDocs(String word, MongoCollection<Document> dfTfCollection, Integer df) {
+    private List<Document> fetchRelatedDocs(String word, MongoCollection<Document> dfTfCollection, Integer df) {
         // Fetch all documents from df_tf collection
         Document termQuery = new Document("term", word);
         Document dfTfDoc = dfTfCollection.find(termQuery).first();
 
         if (dfTfDoc == null) return null;
-        df = dfTfDoc.get("df", Integer.class);
+        df = dfTfDoc.get("DF", Integer.class);
 
         System.out.println(STR."Term: \{word}, DF: \{df}");
-        Document documentsObject = dfTfDoc.get("documents", Document.class);
+        List<Document> documentsObject = dfTfDoc.getList("documents", Document.class);
 
         return documentsObject;
     }
 
-    private void fetchIndexedDocs(Document relatedDocsObject,
+    private void fetchIndexedDocs(List<Document> relatedDocsObject,
+                                  String word,
                                   Integer df,
                                   MongoCollection<Document> documentsCollection,
-                                  HashMap<Document, Double> pageScores,
-                                  long N) {
+                                  HashMap<Document, PageScorer> pageScores) {
 
-        for (String docId : relatedDocsObject.keySet()) {
-            int tf = relatedDocsObject.getInteger(docId);
+        for (Document doc : relatedDocsObject) {
+            Integer[] TF = { 0, 0, 0 };
+            TF[0] = doc.getInteger("tf_header");
+            TF[1] = doc.getInteger("tf_title");
+            TF[2] = doc.getInteger("tf_text");
+            String docId = doc.getObjectId("docId").toString();
             Document document = documentsCollection.find(new Document("_id", new ObjectId(docId))).first();
             if (document != null) {
                 String url = document.getString("url");
-                System.out.println(STR."ID: \{docId}, URL: \{url}, TF: \{tf}");
-                double score = tf * log((double) N / df);
+                System.out.println(STR."ID: \{docId}, URL: \{url}, TF Header: \{TF[0]}, TF Title: \{TF[1]}, TF Text \{TF[2]}");
+                PageScorer scorer;
                 if (pageScores.containsKey(document)) {
-                    pageScores.put(document, pageScores.get(document) + score);
+                    scorer = pageScores.get(document);
+                    scorer.addWord(word);
+                    scorer.addTF(TF);
                 } else {
-                    pageScores.put(document, score);
+                    scorer = new PageScorer();
+                    scorer.addWord(word);
+                    scorer.addTF(TF);
                 }
+                pageScores.put(document, scorer);
 
             } else {
                 logger.log(Level.SEVERE, STR."Document with ID \{docId} not found in documents table");
@@ -131,60 +147,159 @@ public class RankerSystem {
     private void fetchPhraseIndexedDocs(String phrase,
                                   MongoCollection<Document> dfTfCollection,
                                   MongoCollection<Document> documentsCollection,
-                                  HashMap<Document, Double> pageScores,
-                                  long N) {
+                                  HashMap<Document, PageScorer> pageScores) {
+        System.out.println(phrase);
+        ArrayList<String> tokens = QueryProcessing.tokenization(phrase);
+        int size = tokens.size();
 
-        // Fetch all documents from df_tf collection
-        Document termQuery = new Document("term", phrase);
-        Document dfTfDoc = dfTfCollection.find(termQuery).first();
+        // Get pages for all words
+        HashMap<String, ArrayList<Document>> pagesInfo = new HashMap<>();
+        for (String word : tokens) {
+            Integer DF = 0;
+            List<Document> relatedDocs = fetchRelatedDocs(word, dfTfCollection, DF);
+            // If a word doesn't exist then the phrase doesn't exist fully
+            if (relatedDocs == null) return;
 
-        if (dfTfDoc == null) return;
-        int df = dfTfDoc.get("df", Integer.class);
+            HashSet<String> relatedPages = new HashSet<>();
+            for (Document doc : relatedDocs) {
+                String docId = doc.getObjectId("docId").toString();
+                if (pagesInfo.containsKey(docId)) {
+                    pagesInfo.get(docId).add(doc);
+                } else {
+                    ArrayList<Document> docList = new ArrayList<>();
+                    docList.add(doc);
+                    pagesInfo.put(docId, docList);
+                }
+            }
+        }
 
-        System.out.println(STR."Term: \{phrase}, DF: \{df}");
-        Document documentsObject = dfTfDoc.get("documents", Document.class);
-        for (String docId : documentsObject.keySet()) {
-            int tf = documentsObject.getInteger(docId);
+        Integer DF = 0;
+        // Get common pages for all words
+        HashMap<String, PageScorer> phraseScores = new HashMap<>();
+        HashMap<String, ArrayList<Document>> commonPages = new HashMap<>();
+        for (Map.Entry<String, ArrayList<Document>> doc : pagesInfo.entrySet()) {
+            if (doc.getValue().size() == size) {
+                System.out.println(STR."Contains phrase of size: \{size}");
+
+                // get indices
+                ArrayList<ArrayList<IndexPair>> indices = new ArrayList<>();
+                for (Document docInfo : doc.getValue()) {
+                    indices.add(getWordIndices(docInfo));
+                }
+                Integer[] TF = { 0, 0, 0 };
+                if (checkPhraseOccurence(indices, size, TF)) {
+                    DF++;
+                    System.out.println(STR."doc: \{doc.getKey()}, TF Header: \{TF[0]}, TF Title: \{TF[1]}, TF Text \{TF[2]}");
+                    PageScorer scorer = new PageScorer();
+                    scorer.addTF(TF);
+                    scorer.addWord(phrase);
+                    phraseScores.put(doc.getKey(), scorer);
+                }
+            }
+        }
+
+        for (Map.Entry<String, PageScorer> doc : phraseScores.entrySet()) {
+            PageScorer currScorer = doc.getValue();
+            currScorer.addDF(DF);
+            String docId = doc.getKey();
             Document document = documentsCollection.find(new Document("_id", new ObjectId(docId))).first();
             if (document != null) {
                 String url = document.getString("url");
-                System.out.println(STR."Term: \{phrase}, ID: \{docId}, URL: \{url}, TF: \{tf}");
-                double score = tf * log((double) N / df);
+                PageScorer scorer;
                 if (pageScores.containsKey(document)) {
-                    pageScores.put(document, pageScores.get(document) + score);
+                    scorer = pageScores.get(document);
+                    scorer.append(currScorer);
                 } else {
-                    pageScores.put(document, score);
+                    scorer = currScorer;
                 }
+                pageScores.put(document, scorer);
 
             } else {
                 logger.log(Level.SEVERE, STR."Document with ID \{docId} not found in documents table");
             }
         }
-
     }
 
-    private ArrayList<Map.Entry<Document, Double>> orderQueryResult (HashMap<Document, Double> pageScores,
-                                                                     MongoCollection<Document> pageRankCollection) {
+    private ArrayList<IndexPair> getWordIndices(Document doc) {
+        ArrayList<IndexPair> translatedIndices = new ArrayList<IndexPair>();
 
-        for (Map.Entry<Document, Double> entry : pageScores.entrySet()) {
+        List<Document> docIndices = doc.getList("indices", Document.class);
+
+        for (Document docIndex : docIndices) {
+            int index = docIndex.getInteger("index");
+            String type = docIndex.getString("type");
+            System.out.print(STR."(\{index}, \{type}) ");
+            translatedIndices.add(new IndexPair(index, type));
+        }
+        System.out.println();
+
+        return translatedIndices;
+    }
+
+    private boolean checkPhraseOccurence(ArrayList<ArrayList<IndexPair>> indices, final int N, Integer[] TF) {
+        int[] idx = new int[N];
+        int j = 1;
+        boolean found = false;
+        while (true) {
+            String type = null;
+            for (; j < N; j++) {
+                if (idx[j - 1] >= indices.get(j - 1).size()) break;
+                if (idx[j] >= indices.get(j).size()) break;
+                int first = indices.get(j - 1).get(idx[j - 1]).index();
+                int sec = indices.get(j).get(idx[j]).index();
+                if (first + 1 == sec) continue;
+                if (sec < first) {
+                    idx[j]++;
+                    j--;
+                } else {
+                    idx[0]++;
+                    j = 1;
+                    break;
+                }
+            }
+            if (j == N) {
+                found = true;
+                type = indices.get(0).get(idx[0]).type();
+                idx[0]++;
+                j = 1;
+                if (type.equals("header")) {
+                    TF[0]++;
+                } else if (type.equals("title")) {
+                    TF[1]++;
+                } else {
+                    TF[2]++;
+                }
+            }
+            if (idx[0] >= indices.get(0).size()) break;
+        }
+        return found;
+    }
+
+
+    private ArrayList<Map.Entry<Document, PageScorer>> orderQueryResult (HashMap<Document, PageScorer> pageScores,
+                                                                         MongoCollection<Document> pageRankCollection) {
+
+        for (Map.Entry<Document, PageScorer> entry : pageScores.entrySet()) {
             Document document = entry.getKey();
-            Double score = entry.getValue();
+            PageScorer scorer = entry.getValue();
             String url = document.getString("url");
             Document pageRankDoc = pageRankCollection.find(new Document("url", url)).first();
             if (pageRankDoc != null) {
-                score *= pageRankDoc.getDouble("pageRank"); // Updated to use pageRankDoc here
-                // Update the score in the hashmap
-                pageScores.put(document, score);
+                scorer.updateScore();
+                scorer.pageRank = pageRankDoc.getDouble("pageRank"); // Updated to use pageRankDoc here
             } else {
                 logger.log(Level.SEVERE, STR + url + " isn't ranked");
             }
         }
 
         // Sort the HashMap by values
-        ArrayList<Map.Entry<Document, Double>> sortedEntries = new ArrayList<>(pageScores.entrySet());
+        ArrayList<Map.Entry<Document, PageScorer>> sortedEntries = new ArrayList<>(pageScores.entrySet());
         // Sort the entries by value in descending order
-        sortedEntries.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
+        sortedEntries.sort((a, b) -> Double.compare(b.getValue().finalScore(), a.getValue().finalScore()));
 
         return sortedEntries;
     }
+
+    private record IndexPair (int index, String type) {}
+
 }
