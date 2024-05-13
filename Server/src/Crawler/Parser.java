@@ -42,7 +42,7 @@ public class Parser {
             // Check if a specific user-agent is allowed to access a URL
             return robotsTxt.query("*", url);
         } catch (IOException e) {
-            logger.log(Level.FINE, STR."Error reading robotsTxt URL: \{robotsTxtStr}", e);
+            //logger.log(Level.FINE, STR."Error reading robotsTxt URL: \{robotsTxtStr}", e);
             return false;
         }
     }
@@ -76,7 +76,7 @@ public class Parser {
                 return null;
             }
         } catch (IOException e) {
-            logger.log(Level.WARNING, STR."Error parsing url URL: \{url}", e);
+            //logger.log(Level.WARNING, STR."Error parsing url URL: \{url}", e);
             return null;
         }
         return null;

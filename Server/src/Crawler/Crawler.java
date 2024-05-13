@@ -2,8 +2,10 @@ package Crawler;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,20 +70,29 @@ public class Crawler implements Runnable {
 
         Document doc = parser.parse(urlPriorityPair, urlFrontier);
 
+
         if (doc != null) {
-            String docText = doc.html();
+            String docText = doc.text();
+            String docHtml = doc.html();
             String title = doc.title();
+
+            ArrayList<String> headerArray = new ArrayList<>();
+            ArrayList<String> titleArray = new ArrayList<>();
+            ArrayList<String> textArray = new ArrayList<>();
+
+            urlManager.getHTMLTags(docHtml, headerArray, titleArray, textArray);
+
             // Check if the url was crawled or the document is a duplicate
             if (!urlManager.checkURL(url, docText)) return;
 
             // Set the url and document as crawled
-            urlManager.visitURL(url, docText, title);
+            urlManager.visitURL(url, docText, headerArray, titleArray, textArray, title);
 
             // Loop on children links in the document
             for (Element link : doc.select("a[href]")) {
                 String new_link = link.absUrl("href");
                 if (!urlManager.handleChildUrl(new_link, url, 0, urlPriorityPair.depth() + 1)) {
-                  logger.log(Level.INFO, STR."Failed adding URL to frontier:\{new_link}");
+                  //logger.log(Level.INFO, STR."Failed adding URL to frontier:\{new_link}");
                 }
             }
 

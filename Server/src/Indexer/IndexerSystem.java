@@ -37,9 +37,9 @@ public class IndexerSystem {
             }
         }
 
-        System.out.println(documentManager.invertedIndex);
-        System.out.println(documentManager.DF);
-        System.out.println(documentManager.TF);
+        //System.out.println(documentManager.invertedIndex);
+        //System.out.println(documentManager.DF);
+        //System.out.println(documentManager.TF);
 
         // Store the inverted index in the database
         MongoClient mongoClient = MongoClients.create(CONNECTION_STRING);

@@ -119,32 +119,22 @@ public class Indexer implements Runnable {
      * @return the ArrayList containing the text tokens
      */
     ArrayList<Pair<String, Integer>> GetDocumentText(Document doc) {
-        String html = doc.getString("document");
-        org.jsoup.nodes.Document parsedDoc = Jsoup.parse(html);
+        ArrayList<String> headerArray = (ArrayList<String>) doc.get("headerArray");
+        ArrayList<String> titleArray = (ArrayList<String>) doc.get("titleArray");
+        ArrayList<String> textArray = (ArrayList<String>) doc.get("textArray");
+
 
         ArrayList<Pair<String, Integer>> wordsPair = new ArrayList<>();
 
-
-        String[] headers = {"h1", "h2", "h3", "h4", "h5", "h6"};
-
-        for(String header : headers) {
-            Elements hTags = parsedDoc.select(header);
-            addWordsToList(hTags, wordsPair, 0);
-        }
-
-        Elements titleTags = parsedDoc.select("title");
-        addWordsToList(titleTags, wordsPair, 1);
-
-        Elements bodyTags = parsedDoc.body().getAllElements();
-
-        addWordsToList(bodyTags, wordsPair, 2);
+        addWordsToList(headerArray, wordsPair, 0);
+        addWordsToList(titleArray, wordsPair, 1);
+        addWordsToList(textArray, wordsPair, 2);
 
         return wordsPair;
     }
 
-    void addWordsToList(Elements elements, ArrayList<Pair<String, Integer>> wordsPair, Integer rank) {
-        for (Element element : elements) {
-            String text = element.text();
+    void addWordsToList(ArrayList<String> tag, ArrayList<Pair<String, Integer>> wordsPair, Integer rank) {
+        for (String text : tag) {
             String[] words = text.split("\\s+");
             for (String word : words) {
                 wordsPair.add(new Pair<>(word, rank));
