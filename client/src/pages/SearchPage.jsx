@@ -1,4 +1,4 @@
-import { React, useRef, useState ,useEffect } from "react";
+import { React, useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import ReactPaginate from "react-paginate";
 import GooglePlusIcon from "../assets/.testing/GooglePlusIcon.png";
@@ -315,9 +315,10 @@ const fetchContent = async (searchQuery) => {
   const res = await response.json();
 };
 
-const CreateSearchResult = (items) => {
-  if(!items) return null;
-  return items.map((item) => {
+const CreateSearchResult = (items, setSelectedIndex, selectedIndex) => {
+  console.log(selectedIndex);
+  if (!items) return null;
+  return items.map((item, i) => {
     return (
       <SearchResult
         iconPath={item.iconPath}
@@ -326,12 +327,16 @@ const CreateSearchResult = (items) => {
         link={item.link}
         title={item.title}
         description={item.description}
+        index={i}
+        animate={i !== selectedIndex}
+        setSelectedIndex={setSelectedIndex}
       />
     );
   });
 };
 
 const SearchPage = ({ itemsPerPage }) => {
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const contentRef = useRef(null);
 
   const [currentItems, setCurrentItems] = useState(null);
@@ -369,7 +374,7 @@ const SearchPage = ({ itemsPerPage }) => {
           <div className={`scroll-wrapper`}>
             {/* <ArrowLeft />
             <ArrowRight /> */}
-            {CreateSearchResult(currentItems)}
+            {CreateSearchResult(currentItems, setSelectedIndex, selectedIndex)}
             <ReactPaginate
               nextLabel=">"
               onPageChange={handlePageClick}
