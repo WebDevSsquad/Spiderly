@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Header from "../components/Header/Header";
 import Loader from "../components/Loader/Loader";
 import Search from "../components/Search/Search";
+import { SearchProvider } from "../utils/SearchContext";
 import "./LandingPage.css";
 
 const LandingPage = () => {
@@ -30,7 +31,9 @@ const LandingPage = () => {
     <div className="body">
       <Header />
       <div className="hero">{!startSearch ? heroContent : <Loader />}</div>
-      <Search handleSearch={handleSearch} />
+      <SearchProvider>
+        <Search handleSearch={handleSearch} />
+      </SearchProvider>
     </div>
   );
 };

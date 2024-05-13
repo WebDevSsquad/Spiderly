@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import SearchbarCSS from "./Searchbar.module.css";
+import querySuggester from "../../utils/querySuggester";
 
 const Searchbar = ({ className, handleSearch }) => {
   const inputRef = useRef(null);
@@ -52,11 +53,17 @@ const Searchbar = ({ className, handleSearch }) => {
   }
 
   const moveCaret = () => {
+    updateSuggestions(inputElement.value);
+
     fakeCaretInputGhost.textContent = inputElement.value
       .substring(0, inputElement.selectionStart)
       .replace(/\n$/, "\n\u0001");
     setCaretXY();
   };
+
+  const updateSuggestions = (query) => {
+    console.log(querySuggester.search(query));
+  }
 
   const search = () => {
     console.log(inputRef.current.value);
