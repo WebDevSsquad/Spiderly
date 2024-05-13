@@ -85,7 +85,10 @@ public class DBManager {
             Entry entry = documents.poll();
             Document add = new Document("title", entry.title())
                     .append("url", entry.link())
-                    .append("document", entry.content());
+                    .append("headerArray", entry.headerArray())
+                    .append("titleArray", entry.titleArray())
+                    .append("textArray", entry.textArray());
+
             collection.insertOne(add);
         }
     }
@@ -126,7 +129,7 @@ public class DBManager {
                 URLPriorityPair pair = new URLPriorityPair(url, priority, depth);
                 queue.offer(pair);
             } catch (URISyntaxException e) {
-                logger.log(Level.SEVERE, STR."Error creating URI: \{doc.getString("url")}", e);
+                //logger.log(Level.SEVERE, STR."Error creating URI: \{doc.getString("url")}", e);
             }
         }
         // Delete the documents from the collection

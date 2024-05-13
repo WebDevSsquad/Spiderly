@@ -16,20 +16,11 @@ import java.util.logging.Logger;
 public class DBManager {
 
     // Logging
-    private static final java.util.logging.Logger logger = Logger.getLogger(DBManager.class.getName());
+    private static final Logger logger = Logger.getLogger(DBManager.class.getName());
 
-    /**
-     * Saves the inverted index to a MongoDB collection.
-     * This method takes the inverted index, document frequency (DF), term frequency (TF), and a MongoDB collection as input.
-     * It iterates over the inverted index, constructs documents representing each word, and saves them to the provided MongoDB collection.
-     * Each document contains information about the original word, its document frequency (DF), and a list of documents (with their respective term frequencies and indices).
-     *
-     * @param invertedIndex         The inverted index mapping words to a map of document IDs and corresponding lists of indices.
-     * @param DF                    The document frequency (DF) map containing the frequency of each word across all documents.
-     * @param TF                The term frequency (TF) map containing the frequency of each word in each document.
-     *
-     * @param invertedIndexCollection The MongoDB collection where the inverted index documents will be saved.
-     */
+    private static final int Batch = 10000;
+
+
 
     public static void saveInvertedIndex(
             ConcurrentHashMap<String, ConcurrentHashMap<ObjectId, ArrayList<Pair<String, Integer>>>> invertedIndex,
@@ -37,6 +28,8 @@ public class DBManager {
             MongoCollection<Document> invertedIndexCollection) {
 
         String[] tag = {"header", "title", "text"};
+        ArrayList<Document>DBDocs = new ArrayList<>();
+        int counter = 0;
         for (Map.Entry<String, ConcurrentHashMap<ObjectId, ArrayList<Pair<String, Integer>>>> entry : invertedIndex.entrySet()) {
             String word = entry.getKey();
             int df = DF.getOrDefault(word, 0);
@@ -71,10 +64,20 @@ public class DBManager {
                 documents.add(doc);
             }
             invertedIndexDoc.append("documents", documents);
-            invertedIndexCollection.insertOne(invertedIndexDoc); // Insert the document into collection
+
+            DBDocs.add(invertedIndexDoc);
+
+            counter++;
+            if(counter == Batch) {
+                counter = 0;
+                invertedIndexCollection.insertMany(DBDocs); // Insert the documents into collection
+                DBDocs.clear();
+            }
+
+        }
+        if(counter != 0) {
+            invertedIndexCollection.insertMany(DBDocs);
+            DBDocs.clear();
         }
     }
-
-
-
 }

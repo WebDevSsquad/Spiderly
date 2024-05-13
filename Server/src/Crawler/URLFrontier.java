@@ -22,6 +22,7 @@ public class URLFrontier {
     private final PriorityBlockingQueue<URLPriorityPair> urlQueue;
 
     // Queue for parsed documents of crawled pages
+
     private final ConcurrentLinkedQueue<Entry> documents;
 
     // Map to store visited or crawled URLs and their parent URLs
@@ -133,15 +134,18 @@ public class URLFrontier {
     }
 
     /**
-     * Adds a document to the queue of parsed documents.
+     * Adds a new document entry to the queue.
      *
-     * @param doc   The document content
-     * @param title The title of the document
-     * @param url   The URL of the document
+     * @param title The title of the document.
+     * @param headerArray The ArrayList containing words found in header tags of the document.
+     * @param titleArray The ArrayList containing words found in title tags of the document.
+     * @param textArray The ArrayList containing words found in body text of the document.
+     * @param url The URL of the document.
      */
-    public void addDocument(String doc, String title, String url) {
-        documents.offer(new Entry(title, doc, url));
+    public void addDocument(String title, ArrayList<String> headerArray, ArrayList<String> titleArray, ArrayList<String> textArray, String url) {
+        documents.offer(new Entry(title, headerArray, titleArray, textArray, url));
     }
+
 
     /**
      * Marks a URL as visited.
