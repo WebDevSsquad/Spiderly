@@ -23,7 +23,7 @@ public class DocumentManager {
     /**
      * The inverted index storing terms and their corresponding document occurrences.
      */
-    public ConcurrentHashMap<String, ConcurrentHashMap<ObjectId, List<Integer>>> invertedIndex;
+    public ConcurrentHashMap<String, ConcurrentHashMap<ObjectId, ArrayList<Pair<String, Integer>>>> invertedIndex;
 
     /**
      * The document frequency (DF) map storing the number of documents each term appears in.
@@ -33,7 +33,7 @@ public class DocumentManager {
     /**
      * The term frequency (TF) map storing the frequency of each term in each document.
      */
-    public final ConcurrentHashMap<String, HashMap<ObjectId, Integer>> TF;
+    public final ConcurrentHashMap<String, HashMap<ObjectId, HashMap<String, Integer>>> TF;
 
     /**
      * The queue containing documents to be indexed.

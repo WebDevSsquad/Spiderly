@@ -69,7 +69,7 @@ public class Crawler implements Runnable {
         Document doc = parser.parse(urlPriorityPair, urlFrontier);
 
         if (doc != null) {
-            String docText = doc.text();
+            String docText = doc.html();
             String title = doc.title();
             // Check if the url was crawled or the document is a duplicate
             if (!urlManager.checkURL(url, docText)) return;

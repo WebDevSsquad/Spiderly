@@ -26,33 +26,47 @@ public class DBManager {
      *
      * @param invertedIndex         The inverted index mapping words to a map of document IDs and corresponding lists of indices.
      * @param DF                    The document frequency (DF) map containing the frequency of each word across all documents.
-     * @param TF                    The term frequency (TF) map containing the frequency of each word in each document.
+     * @param TF                The term frequency (TF) map containing the frequency of each word in each document.
+     *
      * @param invertedIndexCollection The MongoDB collection where the inverted index documents will be saved.
      */
 
     public static void saveInvertedIndex(
-            ConcurrentHashMap<String, ConcurrentHashMap<ObjectId, List<Integer>>> invertedIndex,
-            ConcurrentHashMap<String, Integer> DF, ConcurrentHashMap<String, HashMap<ObjectId, Integer>> TF,
+            ConcurrentHashMap<String, ConcurrentHashMap<ObjectId, ArrayList<Pair<String, Integer>>>> invertedIndex,
+            ConcurrentHashMap<String, Integer> DF, ConcurrentHashMap<String, HashMap<ObjectId, HashMap<String, Integer>>> TF,
             MongoCollection<Document> invertedIndexCollection) {
 
-        for (Map.Entry<String, ConcurrentHashMap<ObjectId, List<Integer>>> entry : invertedIndex.entrySet()) {
+        String[] tag = {"header", "title", "text"};
+        for (Map.Entry<String, ConcurrentHashMap<ObjectId, ArrayList<Pair<String, Integer>>>> entry : invertedIndex.entrySet()) {
             String word = entry.getKey();
             int df = DF.getOrDefault(word, 0);
             Document invertedIndexDoc = new Document()
-                    .append("originalWord", word)
+                    .append("term", word)
                     .append("DF", df);
 
             List<Document> documents = new ArrayList<>();
-            for (Map.Entry<ObjectId, List<Integer>> docEntry : entry.getValue().entrySet()) {
+            for (Map.Entry<ObjectId, ArrayList<Pair<String, Integer>>> docEntry : entry.getValue().entrySet()) {
                 ObjectId docId = docEntry.getKey();
-                List<Integer> indexes = docEntry.getValue();
-
-                int tf = TF.containsKey(word) && TF.get(word).containsKey(docId) ? TF.get(word).get(docId) : 0;
+                ArrayList<Pair<String, Integer>> indices = docEntry.getValue();
 
                 Document doc = new Document()
-                        .append("docId", docId)
-                        .append("TF", tf)
-                        .append("indices", indexes);
+                        .append("docId", docId);
+
+                HashMap<ObjectId, HashMap<String, Integer>> wordTF = TF.getOrDefault(word, new HashMap<>());
+                HashMap<String, Integer> docTF = wordTF.getOrDefault(docId, new HashMap<>());
+
+                for(int i = 0; i < 3; i++) {
+                    doc.append(STR."tf_\{tag[i]}", docTF.getOrDefault(tag[i], 0));
+                }
+
+                List<Document> indicesList = new ArrayList<>();
+                for (Pair<String, Integer> indexPair : indices) {
+                    Document indexDoc = new Document()
+                            .append("index", indexPair.getSecond())
+                            .append("type", indexPair.getFirst());
+                    indicesList.add(indexDoc);
+                }
+                doc.append("indices", indicesList);
 
                 documents.add(doc);
             }
