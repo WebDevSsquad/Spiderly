@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Send Request</title>
+  </head>
+  <body>
+    <button onclick="sendRequest()">Send Request</button>
+
+    <script>
+      function sendRequest() {
+        const url = "http://localhost:8050/"; // URL of your server
+        const data = { query: "mknj" }; // Data to send in the body
+
+        fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            console.log("Response:", data);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+    </script>
+  </body>
+</html>
