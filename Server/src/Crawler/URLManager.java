@@ -1,16 +1,22 @@
 package Crawler;
 
+import Indexer.Pair;
 import com.mongodb.client.MongoCollection;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.validator.UrlValidator;
 import org.bson.Document;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -104,19 +110,77 @@ public class URLManager {
     }
 
     /**
-     * Marks a URL and its document as visited and crawled.
+     * Adds unique words from the given elements to the specified list, avoiding duplicates
+     * by tracking visited tags in the provided HashSet.
      *
-     * @param url   The URL to mark.
-     * @param docText   The content of the document.
+     * @param elements The elements to extract words from.
+     * @param visitedTag The HashSet to track visited tags.
+     * @param tag The ArrayList to which unique words are added.
+     */
+    private void addWordsToList(Elements elements, HashSet<String> visitedTag, ArrayList<String> tag) {
+        for (Element element : elements) {
+            // Add non-empty text from elements that haven't been visited yet
+            if (!element.text().isEmpty() && !visitedTag.contains(element.text())) {
+                tag.add(element.text());
+                visitedTag.add(element.text());
+            }
+        }
+    }
+
+    /**
+     * Extracts HTML tags from the provided HTML document and populates
+     * corresponding ArrayLists with unique words found in different sections.
+     *
+     * @param docHtml The HTML content to parse.
+     * @param headerArray The ArrayList to store words found in header tags.
+     * @param titleArray The ArrayList to store words found in title tags.
+     * @param textArray The ArrayList to store words found in body text.
+     */
+    public void getHTMLTags(String docHtml, ArrayList<String> headerArray, ArrayList<String> titleArray, ArrayList<String> textArray) {
+        org.jsoup.nodes.Document parsedDoc = Jsoup.parse(docHtml);
+
+        HashSet<String> visitedTag = new HashSet<>();
+        String[] headers = {"h1", "h2", "h3", "h4", "h5", "h6"};
+
+        // Extract words from header tags
+        for (String header : headers) {
+            Elements hTags = parsedDoc.select(header);
+            addWordsToList(hTags, visitedTag, headerArray);
+        }
+        visitedTag.clear();
+
+        // Extract words from title tags
+        Elements titleTags = parsedDoc.select("title");
+        addWordsToList(titleTags, visitedTag, titleArray);
+
+        visitedTag.clear();
+
+        // Extract words from body text
+        Elements bodyTags = parsedDoc.body().getAllElements();
+        addWordsToList(bodyTags, visitedTag, textArray);
+    }
+
+    /**
+     * Visits a URL, marks the page in the URL frontier, adds the document to the URL frontier, and marks the URL as crawled.
+     *
+     * @param url The URL to visit.
+     * @param docText The text content of the document.
+     * @param headerArray The ArrayList containing words found in header tags of the document.
+     * @param titleArray The ArrayList containing words found in title tags of the document.
+     * @param textArray The ArrayList containing words found in body text of the document.
      * @param title The title of the document.
      */
-    public void visitURL(String url, String docText, String title) {
+    public void visitURL(String url, String docText, ArrayList<String> headerArray, ArrayList<String> titleArray, ArrayList<String> textArray, String title) {
+        // Mark the page in the URL frontier
         urlFrontier.markPage(docText);
 
-        urlFrontier.addDocument(docText, title, url);
+        // Add the document to the URL frontier
+        urlFrontier.addDocument(title, headerArray, titleArray, textArray, url);
 
+        // Mark the URL as crawled
         urlFrontier.markCrawled(url);
     }
+
 
     /**
      * Adds a new URL to the URLFrontier.
@@ -178,7 +242,7 @@ public class URLManager {
 
             return normalizedURL.toLowerCase();
         } catch (URISyntaxException e) {
-           // logger.log(Level.SEVERE, STR."Invalid URL while normalization: \{url}", e);
+            //logger.log(Level.SEVERE, STR."Invalid URL while normalization: \{url}", e);
             return null;
         }
     }
