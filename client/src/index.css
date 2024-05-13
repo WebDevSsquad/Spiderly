@@ -6,8 +6,8 @@
 body {
   width: 100vw;
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -19,11 +19,12 @@ body {
   align-items: center;
   padding: 0px;
   transition: all 0.3s ease;
+  z-index: 500;
 }
 
 code {
   font-family: "Montserrat", sans-serif;
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
 
@@ -34,38 +35,49 @@ code {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
-
+  z-index: 500;
   /* Primary Colors */
-  --brand-primary: #F25A02;
+  --brand-primary: #f25a02;
   --brand-primary-light: rgba(242, 90, 2, 0.75);
-  --brand-secondary: #8797B2;
+  --brand-secondary: #8797b2;
   --brand-secondary-light: rgba(135, 151, 178, 0.19);
   --brand-accent: #ff634a;
   --brand-accent-light: rgba(255, 98, 74, 0.45);
-  --brand-tertiary: #FFB084;
+  --brand-tertiary: #ffb084;
   --brand-tertiary-light: rgba(255, 176, 132, 0.75);
 
   /* Background Colors */
-  --background-light: #FFFFFF;
-  --background-dark: #100F0F;
+  --background-light: #ffffff;
+  --background-dark: #100f0f;
 
   /* Text Colors */
-  --text-light: #FFFFFF;
+  --text-light: #ffffff;
   --text-extralight: rgba(255, 255, 255, 0.45);
 
-  --font-size-extratiny: 0.625rem;   /* 10px / 16px = 0.625rem */
-  --font-size-tiny: 0.75rem;         /* 12px / 16px = 0.75rem */
-  --font-size-extrasmall: 0.875rem;  /* 14px / 16px = 0.875rem */
-  --font-size-small: 1rem;           /* 16px / 16px = 1rem */
-  --font-size-medium: 1.125rem;      /* 18px / 16px = 1.125rem */
-  --font-size-logo: 1.25rem;         /* 20px / 16px = 1.25rem */
-  --font-size-subtitle: 1.375rem;     /* 22px / 16px = 1.375rem */
-  --font-size-h3: 1.5rem;             /* 24px / 16px = 1.5rem */
-  --font-size-h2: 2.5rem;             /* 40px / 16px = 2.5rem */
-  --font-size-hero: 4rem;             /* 64px / 16px = 4rem */
-
+  --font-size-extratiny: 0.625rem; /* 10px / 16px = 0.625rem */
+  --font-size-tiny: 0.75rem; /* 12px / 16px = 0.75rem */
+  --font-size-extrasmall: 0.875rem; /* 14px / 16px = 0.875rem */
+  --font-size-small: 1rem; /* 16px / 16px = 1rem */
+  --font-size-medium: 1.125rem; /* 18px / 16px = 1.125rem */
+  --font-size-logo: 1.25rem; /* 20px / 16px = 1.25rem */
+  --font-size-subtitle: 1.375rem; /* 22px / 16px = 1.375rem */
+  --font-size-h3: 1.5rem; /* 24px / 16px = 1.5rem */
+  --font-size-h2: 2.5rem; /* 40px / 16px = 2.5rem */
+  --font-size-hero: 4rem; /* 64px / 16px = 4rem */
 }
 
+*::-webkit-scrollbar {
+  width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 0px rgba(255, 140, 95, 0.747);
+  background-color: rgba(0, 0, 0);
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--brand-primary);
+  border-radius: 50px;
+}
 
 .montserrat-thin {
   font-family: "Montserrat", sans-serif;
@@ -138,16 +150,16 @@ img {
   /* Add styles for mobile view */
   :root {
     font-size: 12px;
-    --font-size-extratiny: 0.625rem;   /* 10px / 16px = 0.625rem */
-    --font-size-tiny: 0.75rem;         /* 12px / 16px = 0.75rem */
-    --font-size-extrasmall: 0.875rem;  /* 14px / 16px = 0.875rem */
-    --font-size-small: 1rem;           /* 16px / 16px = 1rem */
-    --font-size-medium: 1.125rem;      /* 18px / 16px = 1.125rem */
-    --font-size-logo: 1.25rem;         /* 20px / 16px = 1.25rem */
-    --font-size-subtitle: 1.375rem;     /* 22px / 16px = 1.375rem */
-    --font-size-h3: 1.5rem;             /* 24px / 16px = 1.5rem */
-    --font-size-h2: 2.5rem;             /* 40px / 16px = 2.5rem */
-    --font-size-hero: 3.6rem;             /* 64px / 16px = 4rem */
+    --font-size-extratiny: 0.625rem; /* 10px / 16px = 0.625rem */
+    --font-size-tiny: 0.75rem; /* 12px / 16px = 0.75rem */
+    --font-size-extrasmall: 0.875rem; /* 14px / 16px = 0.875rem */
+    --font-size-small: 1rem; /* 16px / 16px = 1rem */
+    --font-size-medium: 1.125rem; /* 18px / 16px = 1.125rem */
+    --font-size-logo: 1.25rem; /* 20px / 16px = 1.25rem */
+    --font-size-subtitle: 1.375rem; /* 22px / 16px = 1.375rem */
+    --font-size-h3: 1.5rem; /* 24px / 16px = 1.5rem */
+    --font-size-h2: 2.5rem; /* 40px / 16px = 2.5rem */
+    --font-size-hero: 3.6rem; /* 64px / 16px = 4rem */
   }
 }
 
@@ -156,15 +168,15 @@ img {
   /* Add styles for tablet view */
   :root {
     font-size: 14px;
-    --font-size-extratiny: 0.625rem;   /* 10px / 16px = 0.625rem */
-    --font-size-tiny: 0.75rem;         /* 12px / 16px = 0.75rem */
-    --font-size-extrasmall: 0.875rem;  /* 14px / 16px = 0.875rem */
-    --font-size-small: 1rem;           /* 16px / 16px = 1rem */
-    --font-size-medium: 1.125rem;      /* 18px / 16px = 1.125rem */
-    --font-size-logo: 1.25rem;         /* 20px / 16px = 1.25rem */
-    --font-size-subtitle: 1.375rem;     /* 22px / 16px = 1.375rem */
-    --font-size-h3: 1.5rem;             /* 24px / 16px = 1.5rem */
-    --font-size-h2: 2.5rem;             /* 40px / 16px = 2.5rem */
-    --font-size-hero: 4rem;             /* 64px / 16px = 4rem */
+    --font-size-extratiny: 0.625rem; /* 10px / 16px = 0.625rem */
+    --font-size-tiny: 0.75rem; /* 12px / 16px = 0.75rem */
+    --font-size-extrasmall: 0.875rem; /* 14px / 16px = 0.875rem */
+    --font-size-small: 1rem; /* 16px / 16px = 1rem */
+    --font-size-medium: 1.125rem; /* 18px / 16px = 1.125rem */
+    --font-size-logo: 1.25rem; /* 20px / 16px = 1.25rem */
+    --font-size-subtitle: 1.375rem; /* 22px / 16px = 1.375rem */
+    --font-size-h3: 1.5rem; /* 24px / 16px = 1.5rem */
+    --font-size-h2: 2.5rem; /* 40px / 16px = 2.5rem */
+    --font-size-hero: 4rem; /* 64px / 16px = 4rem */
   }
 }

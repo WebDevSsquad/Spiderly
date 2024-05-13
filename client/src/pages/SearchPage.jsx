@@ -375,7 +375,7 @@ const SearchPage = ({ itemsPerPage }) => {
             {/* <ArrowLeft />
             <ArrowRight /> */}
             {CreateSearchResult(currentItems, setSelectedIndex, selectedIndex)}
-            <ReactPaginate
+            {/* <ReactPaginate
               nextLabel=">"
               onPageChange={handlePageClick}
               pageRangeDisplayed={3}
@@ -395,7 +395,7 @@ const SearchPage = ({ itemsPerPage }) => {
               activeClassName="active"
               pageNumber
               renderOnZeroPageCount={null}
-            />
+            /> */}
           </div>
         </div>
         <div className={`highlight`}></div>
