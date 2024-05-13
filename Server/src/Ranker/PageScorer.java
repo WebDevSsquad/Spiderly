@@ -19,6 +19,7 @@ public class PageScorer {
         words = new ArrayList<>();
         DF = new ArrayList<>();;
         pageRank = 1.0;
+        score = 1.0;
         TF = new ArrayList<>();
     }
 
@@ -34,16 +35,17 @@ public class PageScorer {
         this.DF.add(DF);
     }
 
-    public void updateScore() {
+    public double updateScore() {
         score = (double) 0;
         for (int i = 0; i < DF.size(); i++) {
             score += log((double) N / DF.get(i)) *
                     (TF.get(i)[0] * HEADER_FACTOR + TF.get(i)[1] * TITLE_FACTOR + TF.get(i)[2]);
         }
+        return score;
     }
 
     public Double finalScore() {
-        score *= pageRank;
+        score = updateScore() * pageRank;
         return score;
     }
 

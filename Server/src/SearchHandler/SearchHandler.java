@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class SearchHandler {
     public static void main(String[] args) {
-        String query = "check \"i run\" \"city\" \"liberty city running\"";
+        String query = "Run sport in \"Trump campaign\"";
 
         long start = System.currentTimeMillis();
         ArrayList<Map.Entry<Document, PageScorer>> resultPages = searchQuery(query);
@@ -19,8 +19,9 @@ public class SearchHandler {
         int i = 1;
         for (Map.Entry<Document, PageScorer> page : resultPages) {
             Document document = page.getKey();
-            double score = page.getValue().score;
-            System.out.println(STR."\{i++}- score: \{score}");
+            PageScorer scorer = page.getValue();
+            double score = scorer.finalScore();
+            System.out.println(STR."\{i++}- score: \{score} url: \{document.getString("url")} words: \{scorer.words.toString()}");
         }
         System.out.println((end - start) / 1000);
     }

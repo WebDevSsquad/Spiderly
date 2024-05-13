@@ -11,6 +11,7 @@ import org.bson.types.ObjectId;
 import javax.print.Doc;
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,7 +69,7 @@ public class RankerSystem {
         MongoClient mongoClient = MongoClients.create(connectionString);
 
         MongoDatabase indexerDb = mongoClient.getDatabase("Indexer");
-        MongoCollection<Document> dfTfCollection = indexerDb.getCollection("df_tf");
+        MongoCollection<Document> dfTfCollection = indexerDb.getCollection("indexer_collection");
 
         MongoDatabase crawlerDb = mongoClient.getDatabase("Crawler");
         MongoCollection<Document> documentsCollection = crawlerDb.getCollection("documents");
@@ -81,7 +82,7 @@ public class RankerSystem {
         HashMap<Document, PageScorer> pageScores = new HashMap<Document, PageScorer>();
         for (String word : words) {
             if (!QueryProcessing.containsSpace(word)) {
-                Integer DF = 0;
+                AtomicInteger DF = new AtomicInteger();
                 List<Document> relatedDocs = fetchRelatedDocs(word, dfTfCollection, DF);
                 if (relatedDocs == null) continue;
                 fetchIndexedDocs(relatedDocs, word, DF, documentsCollection, pageScores);
@@ -95,15 +96,16 @@ public class RankerSystem {
         return sortedEntries;
     }
 
-    private List<Document> fetchRelatedDocs(String word, MongoCollection<Document> dfTfCollection, Integer df) {
+    private List<Document> fetchRelatedDocs(String word, MongoCollection<Document> dfTfCollection, AtomicInteger DF) {
         // Fetch all documents from df_tf collection
         Document termQuery = new Document("term", word);
         Document dfTfDoc = dfTfCollection.find(termQuery).first();
 
         if (dfTfDoc == null) return null;
-        df = dfTfDoc.get("DF", Integer.class);
+        int currDF = dfTfDoc.get("DF", Integer.class);
+        DF.set(currDF);
 
-        System.out.println(STR."Term: \{word}, DF: \{df}");
+        System.out.println(STR."Term: \{word}, DF: \{DF}");
         List<Document> documentsObject = dfTfDoc.getList("documents", Document.class);
 
         return documentsObject;
@@ -111,7 +113,7 @@ public class RankerSystem {
 
     private void fetchIndexedDocs(List<Document> relatedDocsObject,
                                   String word,
-                                  Integer df,
+                                  AtomicInteger DF,
                                   MongoCollection<Document> documentsCollection,
                                   HashMap<Document, PageScorer> pageScores) {
 
@@ -130,10 +132,12 @@ public class RankerSystem {
                     scorer = pageScores.get(document);
                     scorer.addWord(word);
                     scorer.addTF(TF);
+                    scorer.addDF(DF.get());
                 } else {
                     scorer = new PageScorer();
                     scorer.addWord(word);
                     scorer.addTF(TF);
+                    scorer.addDF(DF.get());
                 }
                 pageScores.put(document, scorer);
 
@@ -149,13 +153,13 @@ public class RankerSystem {
                                   MongoCollection<Document> documentsCollection,
                                   HashMap<Document, PageScorer> pageScores) {
         System.out.println(phrase);
-        ArrayList<String> tokens = QueryProcessing.tokenization(phrase);
+        ArrayList<String> tokens = QueryProcessing.processQuery(phrase);
         int size = tokens.size();
 
         // Get pages for all words
         HashMap<String, ArrayList<Document>> pagesInfo = new HashMap<>();
         for (String word : tokens) {
-            Integer DF = 0;
+            AtomicInteger DF = new AtomicInteger();
             List<Document> relatedDocs = fetchRelatedDocs(word, dfTfCollection, DF);
             // If a word doesn't exist then the phrase doesn't exist fully
             if (relatedDocs == null) return;
@@ -187,7 +191,7 @@ public class RankerSystem {
                     indices.add(getWordIndices(docInfo));
                 }
                 Integer[] TF = { 0, 0, 0 };
-                if (checkPhraseOccurence(indices, size, TF)) {
+                if (checkPhraseOccurrence(indices, size, TF)) {
                     DF++;
                     System.out.println(STR."doc: \{doc.getKey()}, TF Header: \{TF[0]}, TF Title: \{TF[1]}, TF Text \{TF[2]}");
                     PageScorer scorer = new PageScorer();
@@ -213,7 +217,6 @@ public class RankerSystem {
                     scorer = currScorer;
                 }
                 pageScores.put(document, scorer);
-
             } else {
                 logger.log(Level.SEVERE, STR."Document with ID \{docId} not found in documents table");
             }
@@ -228,7 +231,6 @@ public class RankerSystem {
         for (Document docIndex : docIndices) {
             int index = docIndex.getInteger("index");
             String type = docIndex.getString("type");
-            System.out.print(STR."(\{index}, \{type}) ");
             translatedIndices.add(new IndexPair(index, type));
         }
         System.out.println();
@@ -236,15 +238,15 @@ public class RankerSystem {
         return translatedIndices;
     }
 
-    private boolean checkPhraseOccurence(ArrayList<ArrayList<IndexPair>> indices, final int N, Integer[] TF) {
+    private boolean checkPhraseOccurrence(ArrayList<ArrayList<IndexPair>> indices, final int N, Integer[] TF) {
         int[] idx = new int[N];
         int j = 1;
         boolean found = false;
         while (true) {
             String type = null;
             for (; j < N; j++) {
-                if (idx[j - 1] >= indices.get(j - 1).size()) break;
-                if (idx[j] >= indices.get(j).size()) break;
+                if (idx[j - 1] >= indices.get(j - 1).size()) return found;
+                if (idx[j] >= indices.get(j).size()) return found;
                 int first = indices.get(j - 1).get(idx[j - 1]).index();
                 int sec = indices.get(j).get(idx[j]).index();
                 if (first + 1 == sec) continue;
@@ -286,7 +288,7 @@ public class RankerSystem {
             Document pageRankDoc = pageRankCollection.find(new Document("url", url)).first();
             if (pageRankDoc != null) {
                 scorer.updateScore();
-                scorer.pageRank = pageRankDoc.getDouble("pageRank"); // Updated to use pageRankDoc here
+                scorer.pageRank = pageRankDoc.getDouble("pageRank");
             } else {
                 logger.log(Level.SEVERE, STR + url + " isn't ranked");
             }

@@ -10,8 +10,8 @@ import com.mongodb.client.MongoCollection;
 import static java.lang.StringTemplate.STR;
 
 public class CrawlerSystem {
-    private final int THRESHOLD = 3;
-    public final int DOCUMENTS_THRESHOLD = 10000;
+    private final int THRESHOLD = 4;
+    public final int DOCUMENTS_THRESHOLD = 1500;
     private final String connectionString = "mongodb://localhost:27017";
     private final String DATABASE_NAME = "Crawler";
 

@@ -6,11 +6,13 @@ import org.tartarus.snowball.ext.PorterStemmer;
  * The Stemmer class provides methods for stemming words using the Porter stemming algorithm.
  */
 public class Stemmer {
-
+    PorterStemmer stemmer;
     /**
      * Constructs a Stemmer object.
      */
-    public Stemmer() {}
+    public Stemmer() {
+        stemmer = new PorterStemmer();
+    }
 
     /**
      * Stems the given word using the Porter stemming algorithm.
@@ -19,7 +21,6 @@ public class Stemmer {
      * @return the stemmed word
      */
     public String Stem(String word) {
-        PorterStemmer stemmer = new PorterStemmer();
         stemmer.setCurrent(word);
         stemmer.stem();
         return stemmer.getCurrent();
