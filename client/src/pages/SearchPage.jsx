@@ -301,18 +301,18 @@ const items = [
     description: "Check theseoona's (LEAKED).",
   },
 ];
-const fetchContent = async (searchQuery) => {
-  const response = await fetch(`http://localhost:8080/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      searchQuery: searchQuery,
-    }),
-  });
+const handleSearch = async (searchQuery) => {
+  // const response = await fetch(`http://localhost:8080/`, {
+  //   method: "POST",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //   },
+  //   body: JSON.stringify({
+  //     searchQuery: searchQuery,
+  //   }),
+  // });
 
-  const res = await response.json();
+  // const res = await response.json();
 };
 
 const CreateSearchResult = (items, setSelectedIndex, selectedIndex) => {
@@ -367,7 +367,7 @@ const SearchPage = ({ itemsPerPage }) => {
   return (
     <main className={`search-page body`}>
       <Header className={`header`}>
-        <Searchbar className={`searchbar`} />
+        <Searchbar className={`searchbar`} handleSearch={handleSearch} />
       </Header>
       <div className={`content`} ref={contentRef}>
         <div className={`content_result`}>
@@ -375,7 +375,7 @@ const SearchPage = ({ itemsPerPage }) => {
             {/* <ArrowLeft />
             <ArrowRight /> */}
             {CreateSearchResult(currentItems, setSelectedIndex, selectedIndex)}
-            {/* <ReactPaginate
+            <ReactPaginate
               nextLabel=">"
               onPageChange={handlePageClick}
               pageRangeDisplayed={3}
@@ -395,7 +395,7 @@ const SearchPage = ({ itemsPerPage }) => {
               activeClassName="active"
               pageNumber
               renderOnZeroPageCount={null}
-            /> */}
+            />
           </div>
         </div>
         <div className={`highlight`}></div>

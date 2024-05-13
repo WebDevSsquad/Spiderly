@@ -124,6 +124,11 @@ const Searchbar = ({ className, handleSearch }) => {
         <div className={`${SearchbarCSS.suggestion}`}>
           {filteredSuggestions.map((suggestion) => (
             <span
+              onClick={(e) => {
+                inputRef.current.value = e.target.innerText;
+                search();
+                setOpenSuggestions(false);
+              }}
               className={`${SearchbarCSS.suggestion_item}`}
               key={suggestion}
             >
