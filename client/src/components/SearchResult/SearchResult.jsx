@@ -121,13 +121,15 @@ const handelAnimation = (
 };
 
 const SearchResult = ({
-  contentRef,
   iconPath,
   brand,
   protocol,
   link,
   title,
   description,
+  index,
+  animate,
+  setSelectedIndex,
 }) => {
   const logoRef = useRef(null);
   const iconRef = useRef(null);
@@ -137,7 +139,10 @@ const SearchResult = ({
   const titleRef = useRef(null);
   const titleSpanRef = useRef(null);
   const descriptionRef = useRef(null);
+  const [currIndex, setIndex] = useState(false);
+  const [animation, setAnimation] = useState(false);
   useEffect(() => {
+    setIndex(index);
     handelAnimation(
       logoRef,
       iconRef,
@@ -151,6 +156,8 @@ const SearchResult = ({
   }, []); // Empty dependency array ensures this effect runs only once
 
   const handleClick = () => {
+    setAnimation(true);
+    setSelectedIndex(currIndex);
     if (logoRef.current) {
       logoRef.current.animate(
         [
@@ -215,7 +222,71 @@ const SearchResult = ({
       );
     }
   };
-
+  const removeAnimation = () => {
+    if (logoRef.current) {
+      logoRef.current.animate(
+        [
+          { transform: "scale(1) translateX(0rem)" }, // Initial styles
+        ],
+        {
+          duration: 1000, // 1 second
+          iterations: 1,
+          direction: "normal", // Run animation forwards
+          easing: "ease-in-out", // Easing function
+          fill: "forwards", // Retain the final state after the animation
+        }
+      );
+    }
+    if (linkRef) {
+      linkRef.current.animate(
+        [
+          { transform: "translateX(0rem)" }, // Initial styles
+        ],
+        {
+          delay: 500, // Wait for 0.5 seconds before starting
+          duration: 1000, // 1 second
+          iterations: 1,
+          direction: "normal", // Run animation forwards
+          easing: "ease", // Easing function
+          fill: "forwards", // Retain the final state after the animation
+        }
+      );
+    }
+    if (titleRef) {
+      titleRef.current.animate(
+        [
+          { transform: "translateX(0rem)" }, // Initial styles
+        ],
+        {
+          delay: 500, // Wait for 0.5 seconds before starting
+          duration: 1000, // 1 second
+          iterations: 1,
+          direction: "normal", // Run animation forwards
+          easing: "ease", // Easing function
+          fill: "forwards", // Retain the final state after the animation
+        }
+      );
+    }
+    if (descriptionRef) {
+      descriptionRef.current.animate(
+        [
+          { transform: "translateX(0rem)" }, // Initial styles
+        ],
+        {
+          delay: 500, // Wait for 0.5 seconds before starting
+          duration: 1000, // 1 second
+          iterations: 1,
+          direction: "normal", // Run animation forwards
+          easing: "ease", // Easing function
+          fill: "forwards", // Retain the final state after the animation
+        }
+      );
+    }
+  };
+  if (animate && animation) {
+    removeAnimation();
+    setAnimation(false);
+  }
   return (
     <div className={`${SearchResultCSS.card}`}>
       <div className={`${SearchResultCSS.info}`}>
@@ -256,7 +327,7 @@ const SearchResult = ({
         </button>
       </a>
       <p
-        onClick={handleClick}
+        onClick={!animation ? handleClick : () => {}}
         ref={descriptionRef}
         className={`${SearchResultCSS.description} montserrat-regular`}
       >

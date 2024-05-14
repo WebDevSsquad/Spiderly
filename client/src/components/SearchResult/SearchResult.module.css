@@ -3,7 +3,7 @@
   flex-direction: column;
   padding: 1.5rem 2rem;
   color: var(--text-extralight);
-  z-index: 100;
+  z-index: -10;
   max-width: 100vw;
 }
 
@@ -14,6 +14,7 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: 0.8rem;
+  z-index: 100;
 }
 
 .logo {
@@ -28,6 +29,7 @@
   -webkit-backdrop-filter: blur(5px);
   backdrop-filter: blur(5px);
   overflow: hidden;
+  z-index: 100;
 }
 
 .logo__text {
@@ -35,12 +37,14 @@
   height: 21px;
   color: rgb(228, 231, 233);
   opacity: 0;
+  z-index: 100;
 }
 
 .logo__icon {
   height: 21px;
   aspect-ratio: 1 / 1;
   opacity: 0;
+  z-index: 100;
 }
 
 .link {
@@ -56,6 +60,7 @@
   width: fit-content;
   overflow: hidden; /* Hide overflow content */
   user-select: none;
+  z-index: 100;
 }
 
 .title {
@@ -70,6 +75,7 @@
   padding-right: 0.5rem;
   overflow: hidden;
   text-wrap: nowrap;
+  z-index: 100;
 }
 /* Define the pseudo-element for the glowing border */
 /* .title::after {
@@ -99,13 +105,14 @@
     rgba(227, 227, 227, 0) 100%
   );
   animation: gradient-animation_2 2s linear infinite;
+  z-index: 100;
 }
 .description {
   width: fit-content;
   text-wrap: wrap;
   max-width: 50rem;
   padding: 0.5rem 1.1rem;
-  border-radius: 50px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.08);
   -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
@@ -115,6 +122,7 @@
   transition: all 1s;
   user-select: none;
   cursor: pointer;
+  z-index: 100;
 }
 .title:hover {
   color: var(--brand-accent);

@@ -1,4 +1,4 @@
-import { React, useRef, useState ,useEffect } from "react";
+import { React, useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import ReactPaginate from "react-paginate";
 import GooglePlusIcon from "../assets/.testing/GooglePlusIcon.png";
@@ -301,23 +301,24 @@ const items = [
     description: "Check theseoona's (LEAKED).",
   },
 ];
-const fetchContent = async (searchQuery) => {
-  const response = await fetch(`http://localhost:8080/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      searchQuery: searchQuery,
-    }),
-  });
+const handleSearch = async (searchQuery) => {
+  // const response = await fetch(`http://localhost:8080/`, {
+  //   method: "POST",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //   },
+  //   body: JSON.stringify({
+  //     searchQuery: searchQuery,
+  //   }),
+  // });
 
-  const res = await response.json();
+  // const res = await response.json();
 };
 
-const CreateSearchResult = (items) => {
-  if(!items) return null;
-  return items.map((item) => {
+const CreateSearchResult = (items, setSelectedIndex, selectedIndex) => {
+  console.log(selectedIndex);
+  if (!items) return null;
+  return items.map((item, i) => {
     return (
       <SearchResult
         iconPath={item.iconPath}
@@ -326,12 +327,16 @@ const CreateSearchResult = (items) => {
         link={item.link}
         title={item.title}
         description={item.description}
+        index={i}
+        animate={i !== selectedIndex}
+        setSelectedIndex={setSelectedIndex}
       />
     );
   });
 };
 
 const SearchPage = ({ itemsPerPage }) => {
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const contentRef = useRef(null);
 
   const [currentItems, setCurrentItems] = useState(null);
@@ -362,14 +367,14 @@ const SearchPage = ({ itemsPerPage }) => {
   return (
     <main className={`search-page body`}>
       <Header className={`header`}>
-        <Searchbar className={`searchbar`} />
+        <Searchbar className={`searchbar`} handleSearch={handleSearch} />
       </Header>
       <div className={`content`} ref={contentRef}>
         <div className={`content_result`}>
           <div className={`scroll-wrapper`}>
             {/* <ArrowLeft />
             <ArrowRight /> */}
-            {CreateSearchResult(currentItems)}
+            {CreateSearchResult(currentItems, setSelectedIndex, selectedIndex)}
             <ReactPaginate
               nextLabel=">"
               onPageChange={handlePageClick}
