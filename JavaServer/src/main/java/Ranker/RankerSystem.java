@@ -7,8 +7,10 @@ import com.mongodb.client.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.json.simple.parser.ParseException;
 
 import javax.print.Doc;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -62,7 +64,7 @@ public class RankerSystem {
         PageRank.savePageRank(popularity.getPageRank(), pageRankCollection);
     }
 
-    public ArrayList<Map.Entry<Document, PageScorer>> queryRanker(ArrayList<String> words) {
+    public ArrayList<Map.Entry<Document, PageScorer>> queryRanker(ArrayList<String> words) throws IOException, ParseException {
         // Connect to MongoDB
         MongoClient mongoClient = MongoClients.create(connectionString);
 
@@ -149,7 +151,7 @@ public class RankerSystem {
     private void fetchPhraseIndexedDocs(String phrase,
                                         MongoCollection<Document> dfTfCollection,
                                         MongoCollection<Document> documentsCollection,
-                                        HashMap<Document, PageScorer> pageScores) {
+                                        HashMap<Document, PageScorer> pageScores) throws IOException, ParseException {
         System.out.println(phrase);
         ArrayList<String> tokens = QueryProcessing.processQuery(phrase);
         int size = tokens.size();

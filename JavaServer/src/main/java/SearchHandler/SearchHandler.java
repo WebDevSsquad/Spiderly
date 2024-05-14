@@ -6,8 +6,10 @@ import Ranker.RankerSystem;
 
 import com.mongodb.client.*;
 import org.bson.Document;
+import org.json.simple.parser.ParseException;
 
 import javax.print.Doc;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +34,7 @@ public class SearchHandler {
 
 
 
-    public  HashMap<String,Object> searchQuery(String query) {
+    public  HashMap<String,Object> searchQuery(String query) throws IOException, ParseException {
         long start = System.currentTimeMillis();
         ArrayList<String> tokens = QueryProcessing.processQuery(query.toLowerCase());
 
