@@ -1,25 +1,21 @@
 package Ranker;
 
-import Crawler.Crawler;
-import Crawler.URLManager;
+import Indexer.Pair;
+import Indexer.Stemmer;
 import QueryProcessing.QueryProcessing;
-import com.mongodb.client.*;
-import org.apache.commons.lang3.tuple.Pair;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.json.simple.parser.ParseException;
 
-import javax.print.Doc;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static java.lang.Integer.valueOf;
-import static java.lang.Math.log;
-import static java.lang.Thread.sleep;
 
 
 public class RankerSystem {
@@ -29,6 +25,12 @@ public class RankerSystem {
     private static final String connectionString = "mongodb://localhost:27017";
     private static final String DATABASE_NAME = "Crawler";
     private static final String SECONDARY_DATABASE_NAME = "Ranker";
+    private static final Integer DESCRIPTION_THRESHOLD_MIN = 10;
+    private static final Integer DESCRIPTION_THRESHOLD_MAX = 1000;
+    private String description = null;
+    ArrayList<String> headerArray = new ArrayList<>();
+    ArrayList<String> titleArray = new ArrayList<>();
+    ArrayList<String> textArray = new ArrayList<>();
 
     private static final double DAMPINGFACTOR = 0.825;
 
@@ -111,6 +113,28 @@ public class RankerSystem {
         return documentsObject;
     }
 
+    private void getDescription(Document doc) {
+        headerArray = (ArrayList<String>) doc.get("headerArray");
+        titleArray = (ArrayList<String>) doc.get("titleArray");
+        textArray = (ArrayList<String>) doc.get("textArray");
+    }
+
+    void addDescription(String word) {
+        tagDescriptionLoop(this.headerArray, word);
+        if(this.description != null) tagDescriptionLoop(this.titleArray, word);
+        if(this.description != null) tagDescriptionLoop(this.textArray, word);
+    }
+    void tagDescriptionLoop(ArrayList<String>tag, String word) {
+        for (String text : tag) {
+            if(text.contains(word)) {
+                if (text.length() >= DESCRIPTION_THRESHOLD_MIN && text.length() <= DESCRIPTION_THRESHOLD_MAX) {
+                    this.description = text;
+                }
+            }
+        }
+    }
+
+
     private void fetchIndexedDocs(List<Document> relatedDocsObject,
                                   String word,
                                   AtomicInteger DF,
@@ -125,6 +149,7 @@ public class RankerSystem {
             TF[2] = doc.getInteger("tf_text");
             String docId = doc.getObjectId("docId").toString();
             Document document = documentsCollection.find(new Document("_id", new ObjectId(docId))).first();
+
             if (document != null) {
                 String url = document.getString("url");
                 System.out.println(STR."ID: \{docId}, URL: \{url}, TF Header: \{TF[0]}, TF Title: \{TF[1]}, TF Text \{TF[2]}");
@@ -208,9 +233,12 @@ public class RankerSystem {
         for (Map.Entry<String, PageScorer> doc : phraseScores.entrySet()) {
             PageScorer currScorer = doc.getValue();
             currScorer.addDF(DF);
+            addDescription(phrase);
+            currScorer.addDescription(this.description);
             String docId = doc.getKey();
             Document document = documentsCollection.find(new Document("_id", new ObjectId(docId))).first();
             if (document != null) {
+                getDescription(document);
                 String url = document.getString("url");
                 PageScorer scorer;
                 if (pageScores.containsKey(document)) {

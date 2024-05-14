@@ -63,7 +63,7 @@ public class SearchHandler {
             result.add(pageInfo);
         }
 
-        map.put("documents",result);
+        map.put("documents", result);
         return map;
     }
 

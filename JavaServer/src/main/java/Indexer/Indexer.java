@@ -43,8 +43,8 @@ public class Indexer implements Runnable {
     public Indexer(DocumentManager documentManager) {
         this.stemmer = new Stemmer();
         this.documentManager = documentManager;
-        this.DESCRIPTION_THRESHOLD_MIN = 40;
-        this.DESCRIPTION_THRESHOLD_MAX = 100;
+        this.DESCRIPTION_THRESHOLD_MIN = 10;
+        this.DESCRIPTION_THRESHOLD_MAX = 1000;
     }
 
     /**
