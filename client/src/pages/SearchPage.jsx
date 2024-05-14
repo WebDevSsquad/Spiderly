@@ -19,12 +19,10 @@ const CreateSearchResult = (items, setSelectedIndex, selectedIndex) => {
   return items.map((item, i) => {
     return (
       <SearchResult
-        iconPath={YTIcon}
-        brand={item.brand}
-        protocol={""}
         link={item.url}
         title={item.title}
-        description={"description"}
+        description={item.description}
+        words={item.words}
         index={i}
         animate={i !== selectedIndex}
         setSelectedIndex={setSelectedIndex}
