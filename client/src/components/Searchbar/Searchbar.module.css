@@ -118,13 +118,13 @@ input[type="text"].searchbar_input::placeholder {
 
 .suggestion {
   position: absolute;
-  bottom: -15rem;
-  left: 21rem;
+  top: 6rem;
+  left: 19rem;
   display: flex;
   flex-direction: column;
   background-color: rgb(38 40 46);
   width: 40rem;
-  height: 16rem;
+  height: fit-content;
   padding: 2rem;
   z-index: 2000;
   border-radius: 15px;

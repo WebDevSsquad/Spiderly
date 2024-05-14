@@ -1,4 +1,5 @@
 import { React, useEffect, useRef, useState } from "react";
+import axios from 'axios';
 import ReactDOM from "react-dom";
 import ReactPaginate from "react-paginate";
 import GooglePlusIcon from "../assets/.testing/GooglePlusIcon.png";
@@ -10,6 +11,7 @@ import Header from "../components/Header/Header";
 import SearchResult from "../components/SearchResult/SearchResult";
 import Searchbar from "../components/Searchbar/Searchbar";
 import "./SearchPage.css";
+import { SearchProvider } from "../utils/SearchContext";
 const items = [
   {
     iconPath: YTIcon,
@@ -302,16 +304,19 @@ const items = [
   },
 ];
 const handleSearch = async (searchQuery) => {
-  // const response = await fetch(`http://localhost:8080/`, {
-  //   method: "POST",
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //   },
-  //   body: JSON.stringify({
-  //     searchQuery: searchQuery,
-  //   }),
-  // });
-
+  const url = `http://localhost:8080/search/${searchQuery}`;
+  console.log(url);
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    console.log(response);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    // Handle the error appropriately
+  }
   // const res = await response.json();
 };
 
@@ -367,7 +372,9 @@ const SearchPage = ({ itemsPerPage }) => {
   return (
     <main className={`search-page body`}>
       <Header className={`header`}>
-        <Searchbar className={`searchbar`} handleSearch={handleSearch} />
+        <SearchProvider>
+          <Searchbar className={`searchbar`} handleSearch={handleSearch} />
+        </SearchProvider>
       </Header>
       <div className={`content`} ref={contentRef}>
         <div className={`content_result`}>
@@ -404,8 +411,8 @@ const SearchPage = ({ itemsPerPage }) => {
   );
 };
 
-SearchPage.defaultProps  = {
-  itemsPerPage: 10
-}
+SearchPage.defaultProps = {
+  itemsPerPage: 10,
+};
 
 export default SearchPage;

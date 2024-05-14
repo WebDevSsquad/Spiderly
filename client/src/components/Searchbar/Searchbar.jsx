@@ -1,27 +1,14 @@
 import React, { useEffect, useRef } from "react";
 import SearchbarCSS from "./Searchbar.module.css";
 import querySuggester from "../../utils/querySuggester";
+import { useSearch } from "../../utils/SearchContext";
 
 const Searchbar = ({ className, handleSearch }) => {
   const inputRef = useRef(null);
   const ghostRef = useRef(null);
   const caretRef = useRef(null);
   const [openSuggestions, setOpenSuggestions] = React.useState(false);
-  const [query, setQuery] = React.useState("");
-  const suggestions = [
-    "mood",
-    "color",
-    "time",
-    "name",
-    "name",
-    "name",
-    "name",
-    "name",
-  ];
-
-  const filteredSuggestions = suggestions.filter((suggestion) => {
-    return suggestion.toLowerCase().includes(query.toLowerCase());
-  });
+  const { suggestions, query, setQuery, setSuggestions } = useSearch();
 
   let inputElement, fakeCaret, fakeCaretInputGhost;
 
@@ -77,7 +64,10 @@ const Searchbar = ({ className, handleSearch }) => {
   };
 
   const updateSuggestions = (query) => {
-    console.log(querySuggester.search(query));
+    const querySuggestions = querySuggester.search(query);
+    console.log(querySuggestions);
+    setSuggestions(querySuggestions);
+    setQuery(query);
   }
 
   const search = () => {
@@ -106,14 +96,6 @@ const Searchbar = ({ className, handleSearch }) => {
             className={`${SearchbarCSS.searchbar_input__caret}`}
           ></div>
           <input
-            onChange={(event) => {
-              if (event.target.value === "") {
-                setOpenSuggestions(false);
-              } else {
-                setQuery(event.target.value);
-                setOpenSuggestions(true);
-              }
-            }}
             ref={inputRef}
             id="searchbar_input"
             type="text"
@@ -127,14 +109,13 @@ const Searchbar = ({ className, handleSearch }) => {
           />
         </div>
       </div>
-      {openSuggestions && (
+      {suggestions.length > 0 && query.length > 0 && (
         <div className={`${SearchbarCSS.suggestion}`}>
-          {filteredSuggestions.map((suggestion) => (
+          {suggestions.map((suggestion) => (
             <span
               onClick={(e) => {
                 inputRef.current.value = e.target.innerText;
                 search();
-                setOpenSuggestions(false);
               }}
               className={`${SearchbarCSS.suggestion_item}`}
               key={suggestion}

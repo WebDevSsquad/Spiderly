@@ -7,6 +7,9 @@ export const SearchProvider = ({ children }) => {
     () => JSON.parse(localStorage.getItem("recentSearchList")) || []
   );
 
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+
   const addSearchItem = (searchValue) => {
     if (recentSearchList.includes(searchValue)) {
       return;
@@ -25,7 +28,7 @@ export const SearchProvider = ({ children }) => {
   }, [recentSearchList]);
 
   return (
-    <SearchContext.Provider value={{ recentSearchList, addSearchItem, removeRecentSearchItem }}>
+    <SearchContext.Provider value={{ recentSearchList, addSearchItem, removeRecentSearchItem, setSuggestions, suggestions, setQuery, query }}>
       {children}
     </SearchContext.Provider>
   );
