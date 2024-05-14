@@ -10,6 +10,9 @@ export const SearchProvider = ({ children }) => {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
 
+  const [items, setItems] = useState([]);
+  const [time, setTime] = useState(0);
+
   const addSearchItem = (searchValue) => {
     if (recentSearchList.includes(searchValue)) {
       return;
@@ -28,7 +31,21 @@ export const SearchProvider = ({ children }) => {
   }, [recentSearchList]);
 
   return (
-    <SearchContext.Provider value={{ recentSearchList, addSearchItem, removeRecentSearchItem, setSuggestions, suggestions, setQuery, query }}>
+    <SearchContext.Provider
+      value={{
+        recentSearchList,
+        addSearchItem,
+        removeRecentSearchItem,
+        setSuggestions,
+        suggestions,
+        setQuery,
+        query,
+        items,
+        setItems,
+        time,
+        setTime,
+      }}
+    >
       {children}
     </SearchContext.Provider>
   );
