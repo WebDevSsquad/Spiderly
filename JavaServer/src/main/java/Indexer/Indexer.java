@@ -30,6 +30,11 @@ public class Indexer implements Runnable {
      */
     private final DocumentManager documentManager;
 
+
+    private final Integer DESCRIPTION_THRESHOLD_MIN;
+    private final Integer DESCRIPTION_THRESHOLD_MAX;
+
+
     /**
      * Constructs an Indexer object with the specified DocumentManager.
      *
@@ -38,6 +43,8 @@ public class Indexer implements Runnable {
     public Indexer(DocumentManager documentManager) {
         this.stemmer = new Stemmer();
         this.documentManager = documentManager;
+        this.DESCRIPTION_THRESHOLD_MIN = 40;
+        this.DESCRIPTION_THRESHOLD_MAX = 100;
     }
 
     /**
@@ -51,7 +58,9 @@ public class Indexer implements Runnable {
             Document doc = documentManager.docs.poll();
             if (doc == null) break;
 
-            ArrayList<Pair<String, Integer>> textArray = GetDocumentText(doc);
+            ObjectId id = doc.getObjectId("_id");
+
+            ArrayList<Pair<String, Integer>> textArray = GetDocumentText(doc, id);
 
             HashSet<String> stopWords = new HashSet<>();
             try {
@@ -59,7 +68,6 @@ public class Indexer implements Runnable {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            ObjectId id = doc.getObjectId("_id");
 
             Index(textArray, stopWords, id);
         }
@@ -118,7 +126,7 @@ public class Indexer implements Runnable {
      * @param doc the document from which to extract text
      * @return the ArrayList containing the text tokens
      */
-    ArrayList<Pair<String, Integer>> GetDocumentText(Document doc) {
+    ArrayList<Pair<String, Integer>> GetDocumentText(Document doc, ObjectId index) {
         ArrayList<String> headerArray = (ArrayList<String>) doc.get("headerArray");
         ArrayList<String> titleArray = (ArrayList<String>) doc.get("titleArray");
         ArrayList<String> textArray = (ArrayList<String>) doc.get("textArray");
@@ -126,17 +134,28 @@ public class Indexer implements Runnable {
 
         ArrayList<Pair<String, Integer>> wordsPair = new ArrayList<>();
 
-        addWordsToList(headerArray, wordsPair, 0);
-        addWordsToList(titleArray, wordsPair, 1);
-        addWordsToList(textArray, wordsPair, 2);
+        addWordsToList(headerArray, wordsPair, 0, index);
+        addWordsToList(titleArray, wordsPair, 1, index);
+        addWordsToList(textArray, wordsPair, 2, index);
 
         return wordsPair;
     }
 
-    void addWordsToList(ArrayList<String> tag, ArrayList<Pair<String, Integer>> wordsPair, Integer rank) {
+    void addWordsToList(ArrayList<String> tag, ArrayList<Pair<String, Integer>> wordsPair, Integer rank, ObjectId index) {
         for (String text : tag) {
             String[] words = text.split("\\s+");
             for (String word : words) {
+                String stemmedWord = stemmer.Stem(word);
+                if(Objects.equals(stemmedWord, "")) continue;
+                if(text.length() >= DESCRIPTION_THRESHOLD_MIN && text.length() <= DESCRIPTION_THRESHOLD_MAX) {
+                    if (!documentManager.wordDescription.containsKey(stemmedWord)) {
+                        documentManager.wordDescription.put(stemmedWord, new HashMap<>());
+                    }
+                    HashMap<ObjectId, String> innerMap = documentManager.wordDescription.get(stemmedWord);
+                    if (!innerMap.containsKey(index)) {
+                        innerMap.put(index, text);
+                    }
+                }
                 wordsPair.add(new Pair<>(word, rank));
             }
         }

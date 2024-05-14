@@ -43,6 +43,7 @@ public class IndexerSystem {
         //System.out.println(documentManager.invertedIndex);
         //System.out.println(documentManager.DF);
         //System.out.println(documentManager.TF);
+        System.out.println(documentManager.wordDescription);
 
         // Store the inverted index in the database
         MongoClient mongoClient = MongoClients.create(CONNECTION_STRING);
@@ -50,7 +51,7 @@ public class IndexerSystem {
 
         // Store inverted index
         MongoCollection<Document> invertedIndexCollection = database.getCollection("indexer_collection");
-        DBManager.saveInvertedIndex(documentManager.invertedIndex, documentManager.DF, documentManager.TF, invertedIndexCollection);
+        DBManager.saveInvertedIndex(documentManager.invertedIndex, documentManager.DF, documentManager.TF, documentManager.wordDescription, invertedIndexCollection);
 
 
         long end = System.currentTimeMillis();

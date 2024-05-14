@@ -1,5 +1,7 @@
 package Indexer;
 
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import org.tartarus.snowball.ext.PorterStemmer;
 
 /**
@@ -14,15 +16,21 @@ public class Stemmer {
         stemmer = new PorterStemmer();
     }
 
-    /**
-     * Stems the given word using the Porter stemming algorithm.
-     *
-     * @param word the word to be stemmed
-     * @return the stemmed word
-     */
+    private static String removePunctuation(String str) {
+        Pattern pattern = Pattern.compile("[.?:,'!#%^&*()_+-@]+$");
+        Matcher matcher = pattern.matcher(str);
+
+        if (matcher.find()) {
+            str = matcher.replaceAll("");
+        }
+
+        return str;
+    }
     public String Stem(String word) {
         stemmer.setCurrent(word.toLowerCase());
         stemmer.stem();
-        return stemmer.getCurrent();
+        String stemmedWord = stemmer.getCurrent();
+
+        return removePunctuation(stemmedWord);
     }
 }
