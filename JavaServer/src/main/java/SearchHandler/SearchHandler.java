@@ -44,7 +44,6 @@ public class SearchHandler {
         long end = System.currentTimeMillis();
         HashMap<String,Object> map = new HashMap<>();
         map.put("documents",arr);
-        map.put("time",(end - start) / 1000);
         return map;
     }
 }
