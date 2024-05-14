@@ -1,8 +1,9 @@
 package Indexer;
 
+import opennlp.tools.stemmer.PorterStemmer;
+
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-import org.tartarus.snowball.ext.PorterStemmer;
 
 /**
  * The Stemmer class provides methods for stemming words using the Porter stemming algorithm.
@@ -27,10 +28,7 @@ public class Stemmer {
         return str;
     }
     public String Stem(String word) {
-        stemmer.setCurrent(word.toLowerCase());
-        stemmer.stem();
-        String stemmedWord = stemmer.getCurrent();
-
+        String stemmedWord = stemmer.stem(word.toLowerCase());
         return removePunctuation(stemmedWord);
     }
 }
