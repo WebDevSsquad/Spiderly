@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import {stemmer} from "stemmer";
+import { stemmer } from "stemmer";
 import { RecentSearchItem } from "../Search/Search";
 import SearchResultCSS from "./SearchResult.module.css";
 const RelatedWord = ({ word }) => {
@@ -137,18 +137,42 @@ const SearchResult = ({
       wordsRef
     );
   }, []); // Empty dependency array ensures this effect runs only once
-
-  let coloredDescription = (description)? description.split(" ").map((word, index) => {
-    const lowerCaseWord = stemmer(word.toLowerCase());
-    if (words.map(stemmer).includes(lowerCaseWord)) {
-      return (
-        <span key={index} className={`${SearchResultCSS.highlight}`}>
-          {word + " "}
-        </span>
+  let coloredDescription = "";
+  if (words[0].split(" ").length > 1) {
+    const temp = description ? description.toLowerCase() : "";
+    const index = temp.indexOf(words[0].split(" ")[0]);
+    console.log(words[0]);
+    // console.log(temp);
+    if (index !== -1) {
+      let margin = 0;
+      let tempidx = index;
+      while (description[tempidx + words[0].length] !== " ") {
+        margin++;
+        tempidx++;
+      }
+      coloredDescription = (
+        <>
+          {description.substring(0, index)}{" "}
+          <span className={`${SearchResultCSS.highlight}`}>{words[0]}</span>
+          {description.substring(index + words[0].length + margin)}
+        </>
       );
     }
-    return word + " ";
-  }):"";
+  } else {
+    coloredDescription = description
+      ? description.split(" ").map((word, index) => {
+          const lowerCaseWord = stemmer(word.toLowerCase());
+          if (words.map(stemmer).includes(lowerCaseWord)) {
+            return (
+              <span key={index} className={`${SearchResultCSS.highlight}`}>
+                {word + " "}
+              </span>
+            );
+          }
+          return word + " ";
+        })
+      : "";
+  }
 
   const handleClick = () => {
     setAnimation(true);
