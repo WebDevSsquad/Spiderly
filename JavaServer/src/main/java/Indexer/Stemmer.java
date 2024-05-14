@@ -17,7 +17,7 @@ public class Stemmer {
     }
 
     private static String removePunctuation(String str) {
-        Pattern pattern = Pattern.compile("[.?:,'!#%^&*()_+-@]+$");
+        Pattern pattern = Pattern.compile("[.,?:'\"!#%$^&*();/|><=~_+\\-@]+");
         Matcher matcher = pattern.matcher(str);
 
         if (matcher.find()) {
