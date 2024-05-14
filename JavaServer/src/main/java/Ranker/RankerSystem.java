@@ -24,15 +24,17 @@ public class RankerSystem {
 
     // Logger
     private static final Logger logger = Logger.getLogger(RankerSystem.class.getName());
-    private final String connectionString = "mongodb://localhost:27017";
-    private final String DATABASE_NAME = "Crawler";
-    private final String SECONDARY_DATABASE_NAME = "Ranker";
+    private static final String connectionString = "mongodb://localhost:27017";
+    private static final String DATABASE_NAME = "Crawler";
+    private static final String SECONDARY_DATABASE_NAME = "Ranker";
 
-    private final double DAMPINGFACTOR = 0.825;
+    private static final double DAMPINGFACTOR = 0.825;
 
-    private final double ERRORMARGIN = .0001;
-
-    public void main(String[] args) {
+    private static final double ERRORMARGIN = .0001;
+    public static void main(String[] args) {
+        runRankerSystem();
+    }
+    public static void runRankerSystem() {
 
         //----------------------------------------------------Database--------------------------------------------------
 
@@ -56,12 +58,8 @@ public class RankerSystem {
                 initialValues.pageCount(),
                 initialValues.transitionMatrix(),
                 initialValues.pageRank());
-//        Relevance relevance = new Relevance(Relevance.loadDocuments(documentsCollection));
-//        relevance.calculateTF();
-//        relevance.calculateIDF();
         popularity.computePageRank();
         PageRank.savePageRank(popularity.getPageRank(), pageRankCollection);
-//        Relevance.saveScores(relevance.getDocuments(),relevanceCollection);
     }
 
     public ArrayList<Map.Entry<Document, PageScorer>> queryRanker(ArrayList<String> words) {

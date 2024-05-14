@@ -1,10 +1,13 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./Header.css";
-
 const Header = ({ className, children }) => {
+  const navigate = useNavigate();
   return (
     <div className={`navbar ${className}`}>
-      <div className="logo"></div>
+      <div className="logo" onClick={() => navigate("/")}>
+        {/* content */}
+      </div>
       {children}
       <a
         className="org"

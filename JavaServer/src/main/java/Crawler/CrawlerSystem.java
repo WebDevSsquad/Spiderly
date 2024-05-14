@@ -1,13 +1,12 @@
 package Crawler;
 
 import Indexer.IndexerSystem;
+import Ranker.RankerSystem;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
-
-import static java.lang.StringTemplate.STR;
 
 public class CrawlerSystem {
     private final int THRESHOLD = 4;
@@ -26,9 +25,9 @@ public class CrawlerSystem {
 
 
         System.out.println(threadCount);
-        runCrawlerSystem(threadCount);
-
+//        runCrawlerSystem(threadCount);
         IndexerSystem.runIndexerSystem(threadCount);
+        RankerSystem.runRankerSystem();
     }
 
     public void runCrawlerSystem(int threadCount) {
@@ -67,7 +66,7 @@ public class CrawlerSystem {
                         System.out.println("State Saved Successfully");
                     }
                 } catch (Exception e) {
-                    System.err.println(STR."Error while saving state: \{e.getMessage()}");
+//                    System.err.println(STR."Error while saving state: \{e.getMessage()}");
                 }
 
                 // Close MongoDB client
@@ -75,7 +74,7 @@ public class CrawlerSystem {
                     mongoClient.close();
                     System.out.println("MongoDB client closed successfully.");
                 } catch (Exception e) {
-                    System.err.println(STR."Error while closing MongoDB client: \{e.getMessage()}");
+//                    System.err.println(STR."Error while closing MongoDB client: \{e.getMessage()}");
                 }
             }
             end = System.currentTimeMillis();
