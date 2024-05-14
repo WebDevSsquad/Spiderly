@@ -17,6 +17,13 @@ public class IndexerSystem {
 
     public static void runIndexerSystem(int threadCount) {
         DocumentManager documentManager = new DocumentManager();
+        // Store the inverted index in the database
+        MongoClient mongoClient = MongoClients.create(CONNECTION_STRING);
+        MongoDatabase database = mongoClient.getDatabase(INDEXER_DATABASE_NAME);
+        // Store inverted index
+        MongoCollection<Document> invertedIndexCollection = database.getCollection("indexer_collection");
+
+        invertedIndexCollection.deleteMany(new Document());
 
         Thread[] threads = new Thread[threadCount];
 
@@ -44,13 +51,8 @@ public class IndexerSystem {
         //System.out.println(documentManager.DF);
         //System.out.println(documentManager.TF);
         //System.out.println(documentManager.wordDescription);
+//        System.out.println(documentManager.wordDescription);
 
-        // Store the inverted index in the database
-        MongoClient mongoClient = MongoClients.create(CONNECTION_STRING);
-        MongoDatabase database = mongoClient.getDatabase(INDEXER_DATABASE_NAME);
-
-        // Store inverted index
-        MongoCollection<Document> invertedIndexCollection = database.getCollection("indexer_collection");
         DBManager.saveInvertedIndex(documentManager.invertedIndex, documentManager.DF, documentManager.TF, documentManager.wordDescription, invertedIndexCollection);
 
 

@@ -18,7 +18,7 @@ public class DBManager {
     // Logging
     private static final Logger logger = Logger.getLogger(DBManager.class.getName());
 
-    private static final int Batch = 5000;
+    private static final int Batch = 2000;
 
 
 
@@ -26,7 +26,6 @@ public class DBManager {
             ConcurrentHashMap<String, ConcurrentHashMap<ObjectId, ArrayList<Pair<String, Integer>>>> invertedIndex,
             ConcurrentHashMap<String, Integer> DF, ConcurrentHashMap<String, HashMap<ObjectId, HashMap<String, Integer>>> TF,
             ConcurrentHashMap<String, HashMap<ObjectId, String>> wordDescription, MongoCollection<Document> invertedIndexCollection) {
-
         String[] tag = {"header", "title", "text"};
         ArrayList<Document>DBDocs = new ArrayList<>();
         int counter = 0;

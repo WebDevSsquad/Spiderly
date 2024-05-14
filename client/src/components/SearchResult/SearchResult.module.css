@@ -179,3 +179,7 @@
   user-select: none;
   text-transform: capitalize;
 }
+.highlight {
+  color: #f19456; /* replace with your color */
+  font-weight: 800;
+}

@@ -126,7 +126,7 @@ public class RankerSystem {
     }
     void tagDescriptionLoop(ArrayList<String>tag, String word) {
         for (String text : tag) {
-            if(text.contains(word)) {
+            if(text.toLowerCase().contains(word)) {
                 if (text.length() >= DESCRIPTION_THRESHOLD_MIN && text.length() <= DESCRIPTION_THRESHOLD_MAX) {
                     this.description = text;
                 }
@@ -234,6 +234,7 @@ public class RankerSystem {
             PageScorer currScorer = doc.getValue();
             currScorer.addDF(DF);
             addDescription(phrase);
+            System.out.println(this.description);
             currScorer.addDescription(this.description);
             String docId = doc.getKey();
             Document document = documentsCollection.find(new Document("_id", new ObjectId(docId))).first();

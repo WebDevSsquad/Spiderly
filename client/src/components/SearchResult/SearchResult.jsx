@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import SearchResultCSS from "./SearchResult.module.css";
 import { RecentSearchItem } from "../Search/Search";
+import SearchResultCSS from "./SearchResult.module.css";
 
 const RelatedWord = ({ word }) => {
   return (
@@ -107,6 +107,7 @@ const handelAnimation = (
 };
 
 const SearchResult = ({
+  marwona,
   link,
   title,
   description,
@@ -136,15 +137,38 @@ const SearchResult = ({
       wordsRef
     );
   }, []); // Empty dependency array ensures this effect runs only once
-
+  let coloredDescription = (description)?description: "";
+  console.log(marwona);
+  if (marwona !== null && marwona !== undefined) {
+    const process = marwona[0] === '"' ? marwona.slice(1, -1) : marwona;
+    const userWords = process.split(" ");
+    if (userWords !== null && userWords !== undefined && description !== null) {
+      coloredDescription = description
+        .split(" ")
+        .map((word, index) => {
+          const lowerCaseWord = word.toLowerCase();
+          if (userWords.includes(lowerCaseWord)) {
+            return (
+              <span key={index} className={`${SearchResultCSS.highlight}`}>
+                {word}
+              </span>
+            );
+          }
+          return word;
+        })
+        .reduce((prev, curr, index) => {
+          return index === 0 ? [curr] : [...prev, " ", curr];
+        }, []);
+    }
+  }
   const handleClick = () => {
     setAnimation(true);
     setSelectedIndex(currIndex);
     if (cardRef) {
       cardRef.current.animate(
         [
-          { transform: "translateX(0rem)", "width": "100%" }, // Initial styles
-          { transform: "translateX(1.5rem)", "width": "110%" },
+          { transform: "translateX(0rem)", width: "100%" }, // Initial styles
+          { transform: "translateX(1.5rem)", width: "110%" },
         ],
         {
           delay: 500, // Wait for 0.5 seconds before starting
@@ -225,7 +249,7 @@ const SearchResult = ({
     if (cardRef) {
       cardRef.current.animate(
         [
-          { transform: "translateX(0rem)", "width": "100%" }, // Initial styles
+          { transform: "translateX(0rem)", width: "100%" }, // Initial styles
         ],
         {
           delay: 500, // Wait for 0.5 seconds before starting
@@ -305,13 +329,16 @@ const SearchResult = ({
   return (
     <div
       onClick={!animation ? handleClick : () => {}}
-      ref={cardRef} 
-      className={`${SearchResultCSS.card}`}>
-      <div
-        ref={linkRef}
-        className={`${SearchResultCSS.link}`}
-      >
-        <span ref={linkSpanRef} className={`${SearchResultCSS.link_text} montserrat-medium`}>{link}</span>
+      ref={cardRef}
+      className={`${SearchResultCSS.card}`}
+    >
+      <div ref={linkRef} className={`${SearchResultCSS.link}`}>
+        <span
+          ref={linkSpanRef}
+          className={`${SearchResultCSS.link_text} montserrat-medium`}
+        >
+          {link}
+        </span>
       </div>
       <a
         ref={titleRef}
@@ -321,10 +348,16 @@ const SearchResult = ({
       >
         {/* <span ref={titleSpanRef}>{title}</span> */}
         <button className={`${SearchResultCSS.button}`} dataText="Awesome">
-          <span className={`${SearchResultCSS.title__actual_text} montserrat-semibold`} ref={titleSpanRef}>
+          <span
+            className={`${SearchResultCSS.title__actual_text} montserrat-semibold`}
+            ref={titleSpanRef}
+          >
             &nbsp;{title}&nbsp;
           </span>
-          <span ariaHidden="true" className={`${SearchResultCSS.hover_text} montserrat-semibold`}>
+          <span
+            ariaHidden="true"
+            className={`${SearchResultCSS.hover_text} montserrat-semibold`}
+          >
             &nbsp;{title}&nbsp;
           </span>
         </button>
@@ -333,12 +366,13 @@ const SearchResult = ({
         ref={descriptionRef}
         className={`${SearchResultCSS.description} montserrat-regular`}
       >
-        {description}
+        {coloredDescription}
       </p>
       {words && (
-        <div 
+        <div
           ref={wordsRef}
-          className={`${SearchResultCSS.words} montserrat-medium`}>
+          className={`${SearchResultCSS.words} montserrat-medium`}
+        >
           {words.map((word) => (
             <RelatedWord word={word} />
           ))}

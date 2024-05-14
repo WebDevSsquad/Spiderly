@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSearch } from "../../utils/SearchContext";
 import querySuggester from "../../utils/querySuggester";
 import SearchbarCSS from "./Searchbar.module.css";
-const Searchbar = ({ className, handleSearch, time,show }) => {
+const Searchbar = ({ className, handleSearch, time, show }) => {
   const inputRef = useRef(null);
   const ghostRef = useRef(null);
   const caretRef = useRef(null);
@@ -78,6 +78,24 @@ const Searchbar = ({ className, handleSearch, time,show }) => {
     handleSearch(inputRef.current.value, navigate);
   };
 
+  const myRef = useRef();
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (myRef.current && !myRef.current.contains(event.target)) {
+        // Hide your element here
+        setSuggestions([]);
+      }
+    }
+
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [myRef]);
+
   return (
     <>
       <div className={`${SearchbarCSS.searchbar} ${className}`}>
@@ -119,7 +137,7 @@ const Searchbar = ({ className, handleSearch, time,show }) => {
         </div>
       </div>
       {suggestions.length > 0 && query.length > 0 && show && (
-        <div className={`${SearchbarCSS.suggestion}`}>
+        <div ref={myRef} className={`${SearchbarCSS.suggestion}`}>
           {suggestions.map((suggestion) => (
             <span
               onClick={(e) => {

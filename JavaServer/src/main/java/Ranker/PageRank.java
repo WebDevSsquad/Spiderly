@@ -146,6 +146,7 @@ public class PageRank {
     public static void savePageRank(URLRankPair[] pageRank, MongoCollection<Document> collection) {
         //sort desc to map the pageRank to values between 1 - N
         Arrays.sort(pageRank);
+        collection.deleteMany(new Document());
         for (int i = 0; i < pageRank.length; i++) {
             Document document = new Document("pageRank", pageRank[i].getPageRank()).append("url", pageRank[i].getUrl());
             collection.insertOne(document);
