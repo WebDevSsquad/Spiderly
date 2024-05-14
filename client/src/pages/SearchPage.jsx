@@ -19,12 +19,11 @@ const SearchPage = ({ itemsPerPage }) => {
   const { items, setItems } = useSearch();
   const { time, setTime } = useSearch();
   const { query, setQuery } = useSearch();
-  const [marwona, setMarwona] = useState("");
   const [loading, setLoading] = useState(false);
   const handleSearch = async (query) => {
-    setMarwona(query);
     const startTime = performance.now(); // Get end time
     const data = await searchQuery(query);
+    console.log(data);
     const endTime = performance.now(); // Get end time
     const timeInSeconds = (endTime - startTime) / 1000; // Calculate time taken in seconds
     setTime(timeInSeconds.toFixed(2));
@@ -41,7 +40,6 @@ const SearchPage = ({ itemsPerPage }) => {
     return items.map((item, i) => {
       return (
         <SearchResult
-          marwona={marwona}
           link={item.url}
           title={item.title}
           description={item.snippet}
@@ -123,7 +121,7 @@ const SearchPage = ({ itemsPerPage }) => {
             {/* {message} */}
             {loading ? (
               message
-            ) : marwona === "" &&
+            ) : query === "" &&
               (currentItems === null ||
                 currentItems === undefined ||
                 currentItems.length === 0) ? (

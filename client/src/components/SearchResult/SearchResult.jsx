@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
+import {stemmer} from "stemmer";
 import { RecentSearchItem } from "../Search/Search";
 import SearchResultCSS from "./SearchResult.module.css";
-
 const RelatedWord = ({ word }) => {
   return (
     <div className={`${SearchResultCSS.word} montserrat-medium`}>{word}</div>
@@ -137,30 +137,19 @@ const SearchResult = ({
       wordsRef
     );
   }, []); // Empty dependency array ensures this effect runs only once
-  let coloredDescription = (description)?description: "";
-  console.log(marwona);
-  if (marwona !== null && marwona !== undefined) {
-    const process = marwona[0] === '"' ? marwona.slice(1, -1) : marwona;
-    const userWords = process.split(" ");
-    if (userWords !== null && userWords !== undefined && description !== null) {
-      coloredDescription = description
-        .split(" ")
-        .map((word, index) => {
-          const lowerCaseWord = word.toLowerCase();
-          if (userWords.includes(lowerCaseWord)) {
-            return (
-              <span key={index} className={`${SearchResultCSS.highlight}`}>
-                {word}
-              </span>
-            );
-          }
-          return word;
-        })
-        .reduce((prev, curr, index) => {
-          return index === 0 ? [curr] : [...prev, " ", curr];
-        }, []);
+
+  let coloredDescription = (description)? description.split(" ").map((word, index) => {
+    const lowerCaseWord = stemmer(word.toLowerCase());
+    if (words.map(stemmer).includes(lowerCaseWord)) {
+      return (
+        <span key={index} className={`${SearchResultCSS.highlight}`}>
+          {word + " "}
+        </span>
+      );
     }
-  }
+    return word + " ";
+  }):"";
+
   const handleClick = () => {
     setAnimation(true);
     setSelectedIndex(currIndex);
