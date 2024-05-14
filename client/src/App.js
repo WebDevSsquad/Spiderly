@@ -1,26 +1,27 @@
-import { useState } from 'react'
-import './App.css'
-import LandingPage from './pages/LandingPage'
+import { useState } from "react";
+import {
+  Redirect,
+  Route,
+  BrowserRouter as Router,
+  Routes,
+} from "react-router-dom";
+import "./App.css";
 import ParticlesComponent from "./components/particles";
-import SearchPage from './pages/SearchPage';
-
+import LandingPage from "./pages/LandingPage";
+import SearchPage from "./pages/SearchPage";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <>
       <ParticlesComponent id="particles" />
-      {/* <Router>
-        <Switch>
-        <Route path="/" exact component={LandingPage} />
-        <Route path="/search" component={SearchPage} />
-        <Redirect to="/" />
-        </Switch>
-      </Router> */}
-      <SearchPage />
+      <Router>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/search" element={<SearchPage />} />
+        </Routes>
+      </Router>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
