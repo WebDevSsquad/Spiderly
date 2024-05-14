@@ -304,17 +304,16 @@ const items = [
   },
 ];
 const handleSearch = async (searchQuery) => {
-  const url = `http://localhost:8080/search/${searchQuery}`;
-  console.log(url);
   try {
+    const url = `http://localhost:8080/search?q=${searchQuery}`;
     const response = await axios.get(url, {
       headers: {
         "Content-Type": "application/json",
       },
     });
-    console.log(response);
+    console.log(response.data);
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.error("Error fetching data:", error.response);
     // Handle the error appropriately
   }
   // const res = await response.json();

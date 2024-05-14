@@ -4,10 +4,13 @@ import QueryProcessing.QueryProcessing;
 import Ranker.PageScorer;
 import Ranker.RankerSystem;
 
+import com.mongodb.client.*;
 import org.bson.Document;
 
+import javax.print.Doc;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SearchHandler {
@@ -41,9 +44,44 @@ public class SearchHandler {
         RankerSystem rankerSystem = new RankerSystem();
         ArrayList<Map.Entry<Document, PageScorer>> arr =  rankerSystem.queryRanker(tokens);
 
+        if (!arr.isEmpty()) addSuggestion(query.toLowerCase());
+
         long end = System.currentTimeMillis();
         HashMap<String,Object> map = new HashMap<>();
         map.put("documents",arr);
+        return map;
+    }
+
+    public void addSuggestion(String query) {
+        final String connectionString = "mongodb://localhost:27017";
+        final String DATABASE_NAME = "SearchEngine";
+        MongoClient mongoClient = MongoClients.create(connectionString);
+        MongoDatabase searchDB = mongoClient.getDatabase(DATABASE_NAME);
+        MongoCollection<Document> suggestionsCollection = searchDB.getCollection("suggestions");
+        Document term = new Document("term", query);
+        long found = suggestionsCollection.countDocuments(term);
+        System.out.println(found);
+        if (found == 0) {
+            suggestionsCollection.insertOne(term);
+        }
+    }
+
+    public HashMap<String, Object> getSuggestions() {
+        final String connectionString = "mongodb://localhost:27017";
+        final String DATABASE_NAME = "SearchEngine";
+        MongoClient mongoClient = MongoClients.create(connectionString);
+        MongoDatabase searchDB = mongoClient.getDatabase(DATABASE_NAME);
+        MongoCollection<Document> suggestionsCollection = searchDB.getCollection("suggestions");
+        FindIterable<Document> docs = suggestionsCollection.find();
+
+        ArrayList<String> suggestions = new ArrayList<>();
+
+        for (Document doc : docs) {
+            suggestions.add(doc.getString("term"));
+        }
+
+        HashMap<String,Object> map = new HashMap<>();
+        map.put("suggestions", suggestions);
         return map;
     }
 }
