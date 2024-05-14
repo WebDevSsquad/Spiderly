@@ -46,9 +46,21 @@ public class SearchHandler {
 
         if (!arr.isEmpty()) addSuggestion(query.toLowerCase());
 
-        long end = System.currentTimeMillis();
         HashMap<String,Object> map = new HashMap<>();
-        map.put("documents",arr);
+        ArrayList<Document> result = new ArrayList<>();
+
+        for (Map.Entry<Document, PageScorer> page : arr) {
+            Document doc = page.getKey();
+            PageScorer scorer = page.getValue();
+            Document pageInfo = new Document();
+            pageInfo.put("title", doc.getString("title"));
+            pageInfo.put("url", doc.getString("url"));
+            pageInfo.put("words", scorer);
+
+            result.add(pageInfo);
+        }
+
+        map.put("documents",result);
         return map;
     }
 
