@@ -18,8 +18,7 @@ function App() {
         <Redirect to="/" />
         </Switch>
       </Router> */}
-      <SearchPage itemsPerPage={10} />
-      <LandingPage />
+      <SearchPage />
     </>
   )
 }

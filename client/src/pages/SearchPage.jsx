@@ -399,4 +399,8 @@ const SearchPage = ({ itemsPerPage }) => {
   );
 };
 
+SearchPage.defaultProps  = {
+  itemsPerPage: 10
+}
+
 export default SearchPage;
