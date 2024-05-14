@@ -35,6 +35,9 @@ public class DocumentManager {
      */
     public final ConcurrentHashMap<String, HashMap<ObjectId, HashMap<String, Integer>>> TF;
 
+
+    public final ConcurrentHashMap<String, HashMap<ObjectId, String>> wordDescription;
+
     /**
      * The queue containing documents to be indexed.
      */
@@ -54,6 +57,7 @@ public class DocumentManager {
         invertedIndex = new ConcurrentHashMap<>();
         DF = new ConcurrentHashMap<>();
         TF = new ConcurrentHashMap<>();
+        wordDescription = new ConcurrentHashMap<>();
     }
 
     /**

@@ -18,20 +18,21 @@ public class DBManager {
     // Logging
     private static final Logger logger = Logger.getLogger(DBManager.class.getName());
 
-    private static final int Batch = 10000;
+    private static final int Batch = 5000;
 
 
 
     public static void saveInvertedIndex(
             ConcurrentHashMap<String, ConcurrentHashMap<ObjectId, ArrayList<Pair<String, Integer>>>> invertedIndex,
             ConcurrentHashMap<String, Integer> DF, ConcurrentHashMap<String, HashMap<ObjectId, HashMap<String, Integer>>> TF,
-            MongoCollection<Document> invertedIndexCollection) {
+            ConcurrentHashMap<String, HashMap<ObjectId, String>> wordDescription, MongoCollection<Document> invertedIndexCollection) {
 
         String[] tag = {"header", "title", "text"};
         ArrayList<Document>DBDocs = new ArrayList<>();
         int counter = 0;
         for (Map.Entry<String, ConcurrentHashMap<ObjectId, ArrayList<Pair<String, Integer>>>> entry : invertedIndex.entrySet()) {
             String word = entry.getKey();
+            HashMap<ObjectId, String> docDescriptions = wordDescription.get(word);
             int df = DF.getOrDefault(word, 0);
             Document invertedIndexDoc = new Document()
                     .append("term", word)
@@ -42,8 +43,17 @@ public class DBManager {
                 ObjectId docId = docEntry.getKey();
                 ArrayList<Pair<String, Integer>> indices = docEntry.getValue();
 
+                String description = null;
+                if(docDescriptions != null && !docDescriptions.isEmpty() && docDescriptions.containsKey(docId)) {
+                    description = docDescriptions.get(docId);
+                }
                 Document doc = new Document()
                         .append("docId", docId);
+
+
+                if(description != null) {
+                    doc.append("description", description);
+                }
 
                 HashMap<ObjectId, HashMap<String, Integer>> wordTF = TF.getOrDefault(word, new HashMap<>());
                 HashMap<String, Integer> docTF = wordTF.getOrDefault(docId, new HashMap<>());
