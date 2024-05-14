@@ -11,6 +11,7 @@ public class PageScorer {
     private final static double TITLE_FACTOR = 1.1;
 
     public ArrayList<Integer[]> TF;
+    public String description;
     public ArrayList<Integer> DF;
     public Double pageRank;
     public Double score;
@@ -21,6 +22,7 @@ public class PageScorer {
         pageRank = 1.0;
         score = 1.0;
         TF = new ArrayList<>();
+        description = null;
     }
 
     public void addWord (String word) {
@@ -29,6 +31,10 @@ public class PageScorer {
 
     public void addTF (Integer[] TF) {
         this.TF.add(TF);
+    }
+
+    public void addDescription (String description) {
+        this.description = description;
     }
 
     public void addDF (Integer DF) {

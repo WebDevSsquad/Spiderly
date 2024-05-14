@@ -119,6 +119,7 @@ public class RankerSystem {
 
         for (Document doc : relatedDocsObject) {
             Integer[] TF = { 0, 0, 0 };
+            String description = doc.get("description", String.class);
             TF[0] = doc.getInteger("tf_header");
             TF[1] = doc.getInteger("tf_title");
             TF[2] = doc.getInteger("tf_text");
@@ -132,11 +133,13 @@ public class RankerSystem {
                     scorer = pageScores.get(document);
                     scorer.addWord(word);
                     scorer.addTF(TF);
+                    scorer.addDescription(description);
                     scorer.addDF(DF.get());
                 } else {
                     scorer = new PageScorer();
                     scorer.addWord(word);
                     scorer.addTF(TF);
+                    scorer.addDescription(description);
                     scorer.addDF(DF.get());
                 }
                 pageScores.put(document, scorer);

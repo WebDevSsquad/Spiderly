@@ -58,6 +58,7 @@ public class SearchHandler {
             pageInfo.put("title", doc.getString("title"));
             pageInfo.put("url", doc.getString("url"));
             pageInfo.put("words", scorer.words);
+            pageInfo.put("snippet", scorer.description);
 
             result.add(pageInfo);
         }
