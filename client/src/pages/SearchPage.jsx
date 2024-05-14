@@ -55,6 +55,7 @@ const SearchPage = ({ itemsPerPage }) => {
   useEffect(() => {
     // Fetch items from another resources.
     console.log(items);
+    if (items == undefined) return;
     const endOffset = itemOffset + itemsPerPage;
     console.log(`Loading items from ${itemOffset} to ${endOffset}`);
     setCurrentItems(items.slice(itemOffset, endOffset));
