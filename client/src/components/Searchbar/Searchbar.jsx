@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from "react";
-import SearchbarCSS from "./Searchbar.module.css";
-import querySuggester from "../../utils/querySuggester";
-import { useSearch } from "../../utils/SearchContext";
 import { useNavigate } from "react-router-dom";
-const Searchbar = ({ className, handleSearch}) => {
+import { useSearch } from "../../utils/SearchContext";
+import querySuggester from "../../utils/querySuggester";
+import SearchbarCSS from "./Searchbar.module.css";
+const Searchbar = ({ className, handleSearch, time }) => {
   const inputRef = useRef(null);
   const ghostRef = useRef(null);
   const caretRef = useRef(null);
@@ -68,15 +68,14 @@ const Searchbar = ({ className, handleSearch}) => {
     console.log(querySuggestions);
     setSuggestions(querySuggestions);
     setQuery(query);
-  }
-
-
+  };
 
   const navigate = useNavigate();
 
   const search = () => {
+    setSuggestions([]);
     console.log(inputRef.current.value);
-    handleSearch(inputRef.current.value,navigate);
+    handleSearch(inputRef.current.value, navigate);
   };
 
   return (
@@ -111,6 +110,12 @@ const Searchbar = ({ className, handleSearch}) => {
               }
             }}
           />
+        </div>
+        <div className={`${SearchbarCSS.time}`}>
+          {time}sec
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path d="M256 0a256 256 0 1 1 0 512A256 256 0 1 1 256 0zM232 120V256c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.4 33.3-6.7s4.4-25.9-6.7-33.3L280 243.2V120c0-13.3-10.7-24-24-24s-24 10.7-24 24z" />
+          </svg>
         </div>
       </div>
       {suggestions.length > 0 && query.length > 0 && (

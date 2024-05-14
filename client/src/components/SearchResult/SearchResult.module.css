@@ -59,6 +59,8 @@
   margin-left: 1rem;
   width: fit-content;
   overflow: hidden; /* Hide overflow content */
+  text-overflow: ellipsis;
+  white-space: nowrap;
   user-select: none;
   z-index: 100;
 }
@@ -69,7 +71,8 @@
   margin-bottom: 0.4rem;
   margin-left: 1rem;
   width: fit-content;
-  max-width: 50rem;
+  max-width: max-content;
+
   position: relative;
   /* border-right: solid 5px; */
   padding-right: 0.5rem;
