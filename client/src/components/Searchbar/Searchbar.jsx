@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from "react";
 import SearchbarCSS from "./Searchbar.module.css";
 import querySuggester from "../../utils/querySuggester";
 import { useSearch } from "../../utils/SearchContext";
-
-const Searchbar = ({ className, handleSearch }) => {
+import { useNavigate } from "react-router-dom";
+const Searchbar = ({ className, handleSearch}) => {
   const inputRef = useRef(null);
   const ghostRef = useRef(null);
   const caretRef = useRef(null);
@@ -70,9 +70,13 @@ const Searchbar = ({ className, handleSearch }) => {
     setQuery(query);
   }
 
+
+
+  const navigate = useNavigate();
+
   const search = () => {
     console.log(inputRef.current.value);
-    handleSearch(inputRef.current.value);
+    handleSearch(inputRef.current.value,navigate);
   };
 
   return (

@@ -21,7 +21,7 @@ public class Stemmer {
      * @return the stemmed word
      */
     public String Stem(String word) {
-        stemmer.setCurrent(word);
+        stemmer.setCurrent(word.toLowerCase());
         stemmer.stem();
         return stemmer.getCurrent();
     }

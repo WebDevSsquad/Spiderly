@@ -34,7 +34,7 @@ public class SearchHandler {
 
     public  HashMap<String,Object> searchQuery(String query) {
         long start = System.currentTimeMillis();
-        ArrayList<String> tokens = QueryProcessing.processQuery(query);
+        ArrayList<String> tokens = QueryProcessing.processQuery(query.toLowerCase());
 
         for (String word : tokens) {
             System.out.println(word);
@@ -55,7 +55,7 @@ public class SearchHandler {
             Document pageInfo = new Document();
             pageInfo.put("title", doc.getString("title"));
             pageInfo.put("url", doc.getString("url"));
-            pageInfo.put("words", scorer);
+            pageInfo.put("words", scorer.words);
 
             result.add(pageInfo);
         }

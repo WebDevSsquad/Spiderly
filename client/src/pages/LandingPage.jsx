@@ -4,14 +4,31 @@ import Loader from "../components/Loader/Loader";
 import Search from "../components/Search/Search";
 import { SearchProvider } from "../utils/SearchContext";
 import "./LandingPage.css";
+import { useNavigate } from "react-router-dom";
+
+import axios from "axios"; // Import the 'axios' package
+
 
 const LandingPage = () => {
   const [startSearch, setStartSearch] = useState(false);
-
-  const handleSearch = (value) => {
-    setStartSearch(value);
+  const handleSearch = async (searchQuery,navigate) => {
+    setStartSearch(true);
+    try {
+      const url = `http://localhost:8080/search?q=${searchQuery}`;
+      const response = await axios.get(url, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      console.log(response.data);
+      navigate("/search")
+    } catch (error) {
+      console.error("Error fetching data:", error.response);
+      // Handle the error appropriately
+    }
+    // const res = await response.json();
   };
-
   const heroContent = (
     <>
       <div className="hero_content">

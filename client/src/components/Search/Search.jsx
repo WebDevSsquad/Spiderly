@@ -1,7 +1,7 @@
 import React, { useState } from "react";
+import { SearchProvider, useSearch } from "../../utils/SearchContext";
 import Searchbar from "../Searchbar/Searchbar";
 import SearchCSS from "./Search.module.css";
-import { SearchProvider, useSearch } from "../../utils/SearchContext";
 
 const RecentSearchItem = ({ item, index }) => {
   const { removeRecentSearchItem } = useSearch();
@@ -11,7 +11,10 @@ const RecentSearchItem = ({ item, index }) => {
       className={`${SearchCSS.flex_row} ${SearchCSS.recent_search__card} montserrat-medium`}
     >
       {item}
-      <span className={`${SearchCSS.icon}`} onClick={() => removeRecentSearchItem(index)}>
+      <span
+        className={`${SearchCSS.icon}`}
+        onClick={() => removeRecentSearchItem(index)}
+      >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
           <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z" />
         </svg>
@@ -40,11 +43,7 @@ const RecentSearch = () => {
       >
         {recentSearchList.map((item, i) => {
           return (
-            <RecentSearchItem
-              item={item}
-              key={i + "_" + item}
-              index={i}
-            />
+            <RecentSearchItem item={item} key={i + "_" + item} index={i} />
           );
         })}
       </div>
@@ -52,19 +51,17 @@ const RecentSearch = () => {
   );
 };
 
-
 const Search = ({ handleSearch, className }) => {
- 
   const { addSearchItem } = useSearch();
 
-  const handleSearchSystem = (value) => {
+  const handleSearchSystem = (value, navigate) => {
     addSearchItem(value);
-    handleSearch(true);
-  }
+    handleSearch(value, navigate);
+  };
 
   return (
     <div className={`${SearchCSS.search_body} ${className}`}>
-        <Searchbar handleSearch={handleSearchSystem} />
+      <Searchbar handleSearch={handleSearchSystem} />
       <div className={`${SearchCSS.separator}`}>
         <span className={`${SearchCSS.separator__info} montserrat-light`}>
           Quick Search

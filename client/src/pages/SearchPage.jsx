@@ -1,5 +1,5 @@
+import axios from "axios";
 import { React, useEffect, useRef, useState } from "react";
-import axios from 'axios';
 import ReactDOM from "react-dom";
 import ReactPaginate from "react-paginate";
 import GooglePlusIcon from "../assets/.testing/GooglePlusIcon.png";
@@ -10,314 +10,8 @@ import { ReactComponent as ArrowRight } from "../assets/angle-right-solid.svg";
 import Header from "../components/Header/Header";
 import SearchResult from "../components/SearchResult/SearchResult";
 import Searchbar from "../components/Searchbar/Searchbar";
-import "./SearchPage.css";
 import { SearchProvider } from "../utils/SearchContext";
-const items = [
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check these new released arts of Marwoona's (LEAKED).",
-  },
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check these new released arts of Marwoona's (LEAKED).",
-  },
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check these new released arts of Marwoona's (LEAKED).",
-  },
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check these new released arts of Marwoona's (LEAKED).",
-  },
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check these new released arts of Marwoona's (LEAKED).",
-  },
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check these new released arts of Marwoona's (LEAKED).",
-  },
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check these new released arts of Marwoona's (LEAKED).",
-  },
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check these new released arts of Marwoona's (LEAKED).",
-  },
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check these new released arts of Marwoona's (LEAKED).",
-  },
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check these new released arts of Marwoona's (LEAKED).",
-  },
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check these new released arts of Marwoona's (LEAKED).",
-  },
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check these new released arts of Marwoona's (LEAKED).",
-  },
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check these new released arts of Marwoona's (LEAKED).",
-  },
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check these new released arts of Marwoona's (LEAKED).",
-  },
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check these new released arts of Marwoona's (LEAKED).",
-  },
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check these new released arts of Marwoona's (LEAKED).",
-  },
-  {
-    iconPath: YTIcon,
-    brand: "Youtube",
-    protocol: "https://",
-    link: "www.youtube.com",
-    title: "Got diamond in THE FINALS!! - Marwoona",
-    description:
-      "Check this video about marwoona and her journey to achieve the diamond in THE FINALS.",
-  },
-  {
-    iconPath: PinterestIcon,
-    brand: "Pinterest",
-    protocol: "https://",
-    link: "www.pinterest.com",
-    title: "Marwoona Portraits - 50 new ideas",
-    description: "Check theseoona's (LEAKED).",
-  },
-];
-const handleSearch = async (searchQuery) => {
-  try {
-    const url = `http://localhost:8080/search?q=${searchQuery}`;
-    const response = await axios.get(url, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    console.log(response.data);
-  } catch (error) {
-    console.error("Error fetching data:", error.response);
-    // Handle the error appropriately
-  }
-  // const res = await response.json();
-};
+import "./SearchPage.css";
 
 const CreateSearchResult = (items, setSelectedIndex, selectedIndex) => {
   console.log(selectedIndex);
@@ -325,12 +19,12 @@ const CreateSearchResult = (items, setSelectedIndex, selectedIndex) => {
   return items.map((item, i) => {
     return (
       <SearchResult
-        iconPath={item.iconPath}
+        iconPath={YTIcon}
         brand={item.brand}
-        protocol={item.protocol}
-        link={item.link}
+        protocol={""}
+        link={item.url}
         title={item.title}
-        description={item.description}
+        description={"description"}
         index={i}
         animate={i !== selectedIndex}
         setSelectedIndex={setSelectedIndex}
@@ -340,6 +34,24 @@ const CreateSearchResult = (items, setSelectedIndex, selectedIndex) => {
 };
 
 const SearchPage = ({ itemsPerPage }) => {
+  const [items, setItems] = useState([]);
+  const handleSearch = async (searchQuery) => {
+    try {
+      const url = `http://localhost:8080/search?q=${searchQuery}`;
+      const response = await axios.get(url, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      setItems(response.data.documents);
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error.response);
+      // Handle the error appropriately
+    }
+    // const res = await response.json();
+  };
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const contentRef = useRef(null);
 
@@ -351,11 +63,12 @@ const SearchPage = ({ itemsPerPage }) => {
 
   useEffect(() => {
     // Fetch items from another resources.
+    console.log(items);
     const endOffset = itemOffset + itemsPerPage;
     console.log(`Loading items from ${itemOffset} to ${endOffset}`);
     setCurrentItems(items.slice(itemOffset, endOffset));
     setPageCount(Math.ceil(items.length / itemsPerPage));
-  }, [itemOffset, itemsPerPage]);
+  }, [itemOffset, itemsPerPage, items]);
 
   // Invoke when user click to request another page.
   const handlePageClick = (event) => {
