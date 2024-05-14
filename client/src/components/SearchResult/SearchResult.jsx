@@ -309,22 +309,22 @@ const SearchResult = ({
       className={`${SearchResultCSS.card}`}>
       <div
         ref={linkRef}
-        className={`${SearchResultCSS.link} montserrat-medium`}
+        className={`${SearchResultCSS.link}`}
       >
-        <span ref={linkSpanRef}>{link}</span>
+        <span ref={linkSpanRef} className={`${SearchResultCSS.link_text} montserrat-medium`}>{link}</span>
       </div>
       <a
         ref={titleRef}
         href={link}
         target="_blank noreferrer"
-        className={`${SearchResultCSS.title} montserrat-semibold`}
+        className={`${SearchResultCSS.title}`}
       >
         {/* <span ref={titleSpanRef}>{title}</span> */}
         <button className={`${SearchResultCSS.button}`} dataText="Awesome">
-          <span className="actual-text" ref={titleSpanRef}>
+          <span className={`${SearchResultCSS.title__actual_text} montserrat-semibold`} ref={titleSpanRef}>
             &nbsp;{title}&nbsp;
           </span>
-          <span ariaHidden="true" className={`${SearchResultCSS.hover_text}`}>
+          <span ariaHidden="true" className={`${SearchResultCSS.hover_text} montserrat-semibold`}>
             &nbsp;{title}&nbsp;
           </span>
         </button>

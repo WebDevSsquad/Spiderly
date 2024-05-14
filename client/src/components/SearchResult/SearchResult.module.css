@@ -4,8 +4,8 @@
   padding: 1.5rem 2rem;
   color: var(--text-extralight);
   z-index: -10;
-  max-width: 100%;
-  width: fit-content;
+  width: 60vw;
+  max-width: 60vw;
   gap: 1rem;
 
   background: rgba(135, 151, 178, 0.09);
@@ -41,6 +41,7 @@
   border: 1px solid rgba(255, 255, 255, 0.075);
   margin-left: 1rem;
   width: max-content;
+  max-width: 40rem;
   overflow: hidden; /* Hide overflow content */
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -52,15 +53,39 @@
   color: var(--brand-primary-light);
   font-size: var(--font-size-subtitle);
   margin-bottom: 0.4rem;
-  width: fit-content;
-  max-width: max-content;
-
+  width: 100%;
+  max-width: 100%;
   position: relative;
   /* border-right: solid 5px; */
   padding-right: 0.5rem;
-  overflow: hidden;
   text-wrap: nowrap;
   z-index: 100;
+}
+
+.title__actual_text {
+  width: 100%;
+  max-width: 100%;
+  text-align: left;
+  overflow: hidden; /* Hide overflow content */
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-left: 0.2rem;
+}
+/* this is the text, when you hover on button */
+.hover_text {
+  text-align: left;
+  padding-left: 0.2rem;
+  
+  position: absolute;
+  box-sizing: border-box;
+  content: attr(data-text);
+  color: var(--animation-color);
+  width: 0%;
+  inset: 0;
+  border-right: var(--border-right) solid var(--animation-color);
+  overflow: hidden;
+  transition: 0.5s;
+  -webkit-text-stroke: 1px var(--animation-color);
 }
 /* Define the pseudo-element for the glowing border */
 /* .title::after {
@@ -110,6 +135,9 @@
   padding: 0;
   border: none;
   cursor: pointer;
+  display: flex;
+  width: max-content;
+  max-width: 55vw;
 }
 
 /* button styling */
@@ -124,19 +152,6 @@
   color: var(--brand-primary-light);
   font-size: var(--font-size-subtitle);
   /* -webkit-text-stroke: 1px var(--text-stroke-color); */
-}
-/* this is the text, when you hover on button */
-.hover_text {
-  position: absolute;
-  box-sizing: border-box;
-  content: attr(data-text);
-  color: var(--animation-color);
-  width: 0%;
-  inset: 0;
-  border-right: var(--border-right) solid var(--animation-color);
-  overflow: hidden;
-  transition: 0.5s;
-  -webkit-text-stroke: 1px var(--animation-color);
 }
 /* hover */
 .button:hover .hover_text {

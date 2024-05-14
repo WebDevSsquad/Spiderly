@@ -37,7 +37,7 @@ const SearchPage = ({ itemsPerPage }) => {
   const {time, setTime} = useSearch();
   const handleSearch = async (query) => {
     const startTime = performance.now(); // Get end time
-    const data = searchQuery(query);
+    const data = await searchQuery(query);
     const endTime = performance.now(); // Get end time
     const timeInSeconds = (endTime - startTime) / 1000; // Calculate time taken in seconds
     setTime(timeInSeconds.toFixed(2));
