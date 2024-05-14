@@ -1,19 +1,17 @@
+import axios from "axios"; // Import the 'axios' package
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../components/Header/Header";
 import Loader from "../components/Loader/Loader";
 import Search from "../components/Search/Search";
-import { SearchProvider } from "../utils/SearchContext";
+import { SearchProvider, useSearch } from "../utils/SearchContext";
 import "./LandingPage.css";
-import { useNavigate } from "react-router-dom";
-
-import axios from "axios"; // Import the 'axios' package
-
 
 const LandingPage = () => {
   const [startSearch, setStartSearch] = useState(false);
-  const [items,setItems] = useState([]);
-  const [time, setTime] = useState(0);
-  const handleSearch = async (searchQuery,navigate) => {
+  const { items, setItems } = useSearch();
+  const { time, setTime } = useSearch();
+  const handleSearch = async (searchQuery, navigate) => {
     setStartSearch(true);
     try {
       const startTime = performance.now(); // Get start time
@@ -30,7 +28,7 @@ const LandingPage = () => {
       setItems(response.data.documents);
       setTime(timeInSeconds.toFixed(2));
       console.log(response.data);
-      navigate("/search")
+      navigate("/search");
     } catch (error) {
       console.error("Error fetching data:", error.response);
       // Handle the error appropriately
@@ -56,7 +54,7 @@ const LandingPage = () => {
     <div className="body">
       <Header />
       <div className="hero">{!startSearch ? heroContent : <Loader />}</div>
-        <Search handleSearch={handleSearch} />
+      <Search handleSearch={handleSearch} />
     </div>
   );
 };

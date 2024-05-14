@@ -141,19 +141,22 @@ const SearchResult = ({
   if (words[0].split(" ").length > 1) {
     const temp = description ? description.toLowerCase() : "";
     const index = temp.indexOf(words[0].split(" ")[0]);
-    console.log(words[0]);
-    // console.log(temp);
     if (index !== -1) {
       let margin = 0;
       let tempidx = index;
-      while (description[tempidx + words[0].length] !== " ") {
+      let extendedStr = words[0];
+      while (
+        tempidx + words[0].length < description.length &&
+        description[tempidx + words[0].length] !== " "
+      ) {
+        extendedStr += description[tempidx + words[0].length];
         margin++;
         tempidx++;
       }
       coloredDescription = (
         <>
           {description.substring(0, index)}{" "}
-          <span className={`${SearchResultCSS.highlight}`}>{words[0]}</span>
+          <span className={`${SearchResultCSS.highlight}`}>{extendedStr}</span>
           {description.substring(index + words[0].length + margin)}
         </>
       );
