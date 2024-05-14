@@ -10,8 +10,9 @@ import { ReactComponent as ArrowRight } from "../assets/angle-right-solid.svg";
 import Header from "../components/Header/Header";
 import SearchResult from "../components/SearchResult/SearchResult";
 import Searchbar from "../components/Searchbar/Searchbar";
-import { SearchProvider } from "../utils/SearchContext";
+import { SearchProvider, useSearch } from "../utils/SearchContext";
 import "./SearchPage.css";
+import { searchQuery } from "../services/searchService";
 
 const CreateSearchResult = (items, setSelectedIndex, selectedIndex) => {
   console.log(selectedIndex);
@@ -32,35 +33,22 @@ const CreateSearchResult = (items, setSelectedIndex, selectedIndex) => {
 };
 
 const SearchPage = ({ itemsPerPage }) => {
-  const [items, setItems] = useState([]);
-  const [time, setTime] = useState(0);
-  const handleSearch = async (searchQuery) => {
-    try {
-      const startTime = performance.now(); // Get start time
-      const url = `http://localhost:8080/search?q=${searchQuery}`;
-      const response = await axios.get(url, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const endTime = performance.now(); // Get end time
-      const timeInSeconds = (endTime - startTime) / 1000; // Calculate time taken in seconds
-
-      // Update state with the fetched data and time taken
-      setItems(response.data.documents);
-      setTime(timeInSeconds.toFixed(2));
-      console.log(response.data);
-    } catch (error) {
-      console.error("Error fetching data:", error.response);
-      // Handle the error appropriately
-    }
+  const {items, setItems} = useSearch();
+  const {time, setTime} = useSearch();
+  const handleSearch = async (query) => {
+    const startTime = performance.now(); // Get end time
+    const data = searchQuery(query);
+    const endTime = performance.now(); // Get end time
+    const timeInSeconds = (endTime - startTime) / 1000; // Calculate time taken in seconds
+    setTime(timeInSeconds.toFixed(2));
+    setItems(data);
   };
+  
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const contentRef = useRef(null);
 
   const [currentItems, setCurrentItems] = useState(null);
   const [pageCount, setPageCount] = useState(0);
-  // Here we use item offsets; we could also use page offsets
   // following the API or data you're working with.
   const [itemOffset, setItemOffset] = useState(0);
 
@@ -87,13 +75,11 @@ const SearchPage = ({ itemsPerPage }) => {
   return (
     <main className={`search-page body`}>
       <Header className={`header`}>
-        <SearchProvider>
-          <Searchbar
-            className={`searchbar`}
-            handleSearch={handleSearch}
-            time={time}
-          />
-        </SearchProvider>
+        <Searchbar
+          className={`searchbar`}
+          handleSearch={handleSearch}
+          time={time}
+        />
       </Header>
       <div className={`content`} ref={contentRef}>
         <div className={`content_result`}>

@@ -10,7 +10,7 @@ import com.mongodb.client.MongoCollection;
 
 public class CrawlerSystem {
     private final int THRESHOLD = 4;
-    public final int DOCUMENTS_THRESHOLD = 6000;
+    public final int DOCUMENTS_THRESHOLD = 2000;
     private final String connectionString = "mongodb://localhost:27017";
     private final String DATABASE_NAME = "Crawler";
 
@@ -25,7 +25,7 @@ public class CrawlerSystem {
 
 
         System.out.println(threadCount);
-//        runCrawlerSystem(threadCount);
+        runCrawlerSystem(threadCount);
         IndexerSystem.runIndexerSystem(threadCount);
         RankerSystem.runRankerSystem();
     }

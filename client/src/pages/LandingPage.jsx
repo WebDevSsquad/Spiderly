@@ -48,9 +48,7 @@ const LandingPage = () => {
     <div className="body">
       <Header />
       <div className="hero">{!startSearch ? heroContent : <Loader />}</div>
-      <SearchProvider>
         <Search handleSearch={handleSearch} />
-      </SearchProvider>
     </div>
   );
 };
