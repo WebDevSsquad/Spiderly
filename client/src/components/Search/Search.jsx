@@ -61,7 +61,7 @@ const Search = ({ handleSearch, className }) => {
 
   return (
     <div className={`${SearchCSS.search_body} ${className}`}>
-      <Searchbar handleSearch={handleSearchSystem} />
+      <Searchbar handleSearch={handleSearchSystem} time={0} show={false}/>
       <div className={`${SearchCSS.separator}`}>
         <span className={`${SearchCSS.separator__info} montserrat-light`}>
           Quick Search

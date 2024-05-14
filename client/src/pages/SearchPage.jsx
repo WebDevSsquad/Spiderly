@@ -92,6 +92,7 @@ const SearchPage = ({ itemsPerPage }) => {
             className={`searchbar`}
             handleSearch={handleSearch}
             time={time}
+            show={true}
           />
         </SearchProvider>
       </Header>

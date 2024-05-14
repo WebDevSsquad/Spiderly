@@ -4,7 +4,8 @@
   padding: 1.5rem 2rem;
   color: var(--text-extralight);
   z-index: -10;
-  max-width: 100vw;
+  max-width: 100%;
+  width: fit-content;
   gap: 1rem;
 
   background: rgba(135, 151, 178, 0.09);
