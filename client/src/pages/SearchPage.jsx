@@ -75,11 +75,12 @@ const SearchPage = ({ itemsPerPage }) => {
   return (
     <main className={`search-page body`}>
       <Header className={`header`}>
-        <Searchbar
-          className={`searchbar`}
-          handleSearch={handleSearch}
-          time={time}
-        />
+          <Searchbar
+            className={`searchbar`}
+            handleSearch={handleSearch}
+            time={time}
+            show={true}
+          />
       </Header>
       <div className={`content`} ref={contentRef}>
         <div className={`content_result`}>

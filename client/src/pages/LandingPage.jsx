@@ -11,16 +11,24 @@ import axios from "axios"; // Import the 'axios' package
 
 const LandingPage = () => {
   const [startSearch, setStartSearch] = useState(false);
+  const [items,setItems] = useState([]);
+  const [time, setTime] = useState(0);
   const handleSearch = async (searchQuery,navigate) => {
     setStartSearch(true);
     try {
+      const startTime = performance.now(); // Get start time
       const url = `http://localhost:8080/search?q=${searchQuery}`;
       const response = await axios.get(url, {
         headers: {
           "Content-Type": "application/json",
         },
       });
-      
+      const endTime = performance.now(); // Get end time
+      const timeInSeconds = (endTime - startTime) / 1000; // Calculate time taken in seconds
+
+      // Update state with the fetched data and time taken
+      setItems(response.data.documents);
+      setTime(timeInSeconds.toFixed(2));
       console.log(response.data);
       navigate("/search")
     } catch (error) {

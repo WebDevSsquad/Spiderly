@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSearch } from "../../utils/SearchContext";
 import querySuggester from "../../utils/querySuggester";
 import SearchbarCSS from "./Searchbar.module.css";
-const Searchbar = ({ className, handleSearch, time }) => {
+const Searchbar = ({ className, handleSearch, time,show }) => {
   const inputRef = useRef(null);
   const ghostRef = useRef(null);
   const caretRef = useRef(null);
@@ -118,7 +118,7 @@ const Searchbar = ({ className, handleSearch, time }) => {
           </svg>
         </div>
       </div>
-      {suggestions.length > 0 && query.length > 0 && (
+      {suggestions.length > 0 && query.length > 0 && show && (
         <div className={`${SearchbarCSS.suggestion}`}>
           {suggestions.map((suggestion) => (
             <span
