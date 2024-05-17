@@ -25,7 +25,7 @@ public class CrawlerSystem {
 
 
         System.out.println(threadCount);
-        //runCrawlerSystem(threadCount);
+        runCrawlerSystem(threadCount);
         IndexerSystem.runIndexerSystem(threadCount);
         RankerSystem.runRankerSystem();
     }
